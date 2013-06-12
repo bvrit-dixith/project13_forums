@@ -29,6 +29,7 @@ class Message(object):
         self.nextQuestion=-1
         self.prevQuestion=-1
         self.firstReply=-1
+        self.messagedata=-1
 
 class Reply(object):
     def __init__(self,forumname,subForumname,message_id,postedby):
@@ -39,6 +40,7 @@ class Reply(object):
         self.postedby=postedby
         self.nextReply=-1
         self.prevReply=-1
+        self.replydata=-1
 
 class User(object):
     def __init__(self,name,password,mail_id,birthdate,joiningdate):

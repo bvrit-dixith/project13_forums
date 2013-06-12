@@ -1,26 +1,18 @@
 __author__ = 'SuSh'
 
-from filecreation import createfile,writeUserData,writeForumData,retrieve
-from project13_forums.project13_forums1.server.user import *
-from projectutils import *
-
-
-
+from filecreation import writeUserData,writeMessagedata,writeReplyData,writeSubforumdata
 
 def addUserMetadata(user):
-     userdata=[]
-     userdata.append(user.username)
-     userdata.append(user.password)
-     userdata.append(user.email)
-     userdata.append(user.birth_date)
-     userdata.append(user.join_date)
-     userdata.append(user.member_of_month)
-     userdata.append(user.message_id)
-     #retrieve("data.bin")
-     writeUserData("data.bin",userdata)
+     writeUserData("data.bin",user)
 
-def writesubForumData(filename,subForumData):
-    pass
+def writesubForumData(subForumData):
+    writeSubforumdata("data.bin",subForumData)
+
+def writeMessageData(messageData):
+    writeMessagedata("data.bin",messageData)
+
+def writereplyData(replydata):
+    writeReplyData("data.bin",replydata)
 
 if __name__=="__main__":
     pass
