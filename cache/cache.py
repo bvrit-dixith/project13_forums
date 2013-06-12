@@ -57,7 +57,7 @@ class message_metadata:
 
 
 
-import server.py
+import api.server.py
 
 list1=[]  #category1
 list2=[]  #2
@@ -104,7 +104,7 @@ def create_sub_forum(i,sub_forum_obj):
     pass
 
 
-def view_forums(i):
+def view_forum(i):
     '''view_sub_forum_list=[]
     for i in sub_forum_metadata:
         if i.forum_name==forum_name:
