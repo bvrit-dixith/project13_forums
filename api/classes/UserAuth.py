@@ -4,6 +4,7 @@ from api.serialization import *
 import re
 
 
+
 class UserAuth(object):
     def __init__(self, username, password):
         self.username = username

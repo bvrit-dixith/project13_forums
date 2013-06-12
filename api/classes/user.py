@@ -27,7 +27,7 @@ class User(object):
             pass
         else:
             return "Invalid Email: email should be a valid one"
-        year, month, date = serialize_date(self.birth_date)
+        year, month, date = serialize_date(str(self.birth_date))
         try:
             if datetime.date.today() - datetime.date(year, month, date):
                 return True
@@ -35,18 +35,20 @@ class User(object):
             return "Invalid Date"
 
     def deserializer(self, input):
+        dict={}
         dict['message'] = input
         return str(dict)
         pass
 
 def serialize_date(input):
-
-    check = '('
+    print input
+    print type(input)
+    check = '['
     year = ""
     month = ""
     date = ""
     for i in range(len(input)):
-        if check == '(':
+        if check == '[':
             if input[i] == ',':
                 check = ','
                 continue
@@ -56,12 +58,12 @@ def serialize_date(input):
             continue
         if check == ',':
             if input[i] == ',':
-                check = ')'
+                check = ']'
                 continue
             month += input[i]
             continue
-        if check == ')':
-            if input[i] == ')':
+        if check == ']':
+            if input[i] == ']':
                 break
             date += input[i]
             continue
