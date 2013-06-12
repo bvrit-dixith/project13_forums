@@ -2,14 +2,14 @@ __author__ = 'ProfAVR'
 
 import socket
 import json
-from project13_forums.sockets_API.server.classes.user import *
-from project13_forums.sockets_API.model.memory import *
-from project13_forums.sockets_API.server.classes.UserAuth import *
-from project13_forums.sockets_API.server.classes.ViewForum import *
-from project13_forums.sockets_API.server.classes.ViewSubForum import *
-from project13_forums.sockets_API.server.classes.CreateSubForum import *
-from project13_forums.sockets_API.server.classes.postcomment import *
-from project13_forums.sockets_API.server.classes.postQuestion import *
+from api.classes.user import *
+from cache.cache import *
+from api.classes.UserAuth import *
+from api.classes.ViewForum import *
+from api.classes.ViewSubForum import *
+from api.classes.CreateSubForum import *
+from api.classes.postcomment import *
+from api.classes.postQuestion import *
 
 
 
@@ -43,7 +43,7 @@ def server():
     while True:
         msg = c.recv(1024)
         server_json = json.json()
-        serialized = server_json.serializer(msg)
+        serialized = "".join(server_json.serializer(msg).values())
         serialized = serialized.split()
         if serialized[0] == "signup":
             U = User(serialized[1], serialized[2], serialized[3], serialized[4])
@@ -73,11 +73,12 @@ def server():
         elif serialized[0] == "view_forum":
             VF = ViewForum(serialized[1])
             forum_list=view_forum(VF.forum_name)
-            forum_json=convert_list_json_object(forum_list)
-            c.send(VF.deserializer(forum_list))
+            forum_json=convert_list(forum_list)
+            c.send(VF.deserializer(forum_json))
             pass
         elif serialized[0] == 'view_sub_forum':
-            VSF=ViewSubForum(serialized[1],serialized[2],)
+            VSF=ViewSubForum(serialized[1],serialized[2])
+
         elif serialized[0] == "create_sub_forum":
             CSF=CreateSubForum(serialized[1],serialized[2],serialized[3])
             if create_sub_forum(CSF):

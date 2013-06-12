@@ -87,7 +87,7 @@ def convert_from_json_object(input):
             json_dict, i = dict(input, i + 1)
         else:
             i += 1
-    return " ".join(json_dict.values())
+    return json_dict
 
 
 
