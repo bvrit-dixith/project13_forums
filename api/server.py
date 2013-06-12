@@ -79,6 +79,7 @@ def server():
         elif serialized[0] == 'view_sub_forum':
             VSF=ViewSubForum(serialized[1],serialized[2])
 
+
         elif serialized[0] == "create_sub_forum":
             CSF=CreateSubForum(serialized[1],serialized[2],serialized[3])
             if create_sub_forum(CSF):
