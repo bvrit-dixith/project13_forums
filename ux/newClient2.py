@@ -123,6 +123,13 @@ def signup():
     dict_user['email'] = email
     return dict_user
 
+def print_sub_forums(dict):
+    header = ("SubForums","Created By")
+    dict_list=dict.items()
+    dict_list.insert(0,header)
+    col_width = max(len(word) for row in dict_list for word in row) + 2 # padding
+    for row in dict_list:
+        print "".join(word.ljust(col_width) for word in row)
 
 def display():
     print "The forums listed are :"
@@ -135,7 +142,10 @@ def display():
     print "\t7. MISCELLANEOUS"
     print "\n"
 
-
+def split_client(dict):
+    dict="#".join(dict.values())
+    dict_keys=dict.keys()
+    return dict.split('#'),dict_keys
 
 def main():
     global dict_user
@@ -165,18 +175,20 @@ def main():
             if serialized == "True":
                 print "Welcome, " + uname
                 while True:
-                    forum_name = display_user(uname)
+                    forum_name,f_name = display_user(uname)
                     client.send(forum_name)
                     display_forums_from_server = client.receive()
                     subforums_Json = JSON_Socket.json()
                     output = subforums_Json.serializer(display_forums_from_server)
                     output += output.split()
-                    client.send(display_user_selected_forum(output,uname))
+                    data_send,sub_forum = display_user_selected_forum(f_name,output,uname)
+                    client.send(data_send)
                     questions = client.receive()
+                    cli_json=JSON_Socket.json()
+                    questions= cli_json.serializer(questions)
+                    questions,id_q = split_client(questions)
                     while True:
-                        questions_Json = JSON_Socket.json()
-                        questions = questions_Json.serializer(questions)
-                        result = display_questions(questions)
+                        result = display_questions(questions,uname,f_name,sub_forum,id_q)
                         if result == "break":
                             break
                         elif result == "exit":
@@ -190,7 +202,7 @@ def main():
                                 print i
                             #replies_Json = JSON_Socket.json()
                             #replies = replies_Json.serializer(about_question)
-                            result = display_replies(uname)
+                            result = display_replies(uname,f_name,sub_forum)
                             if result == "break":
                                 break
                             elif result =="exit":
@@ -228,18 +240,19 @@ def serialize_auth(input):
 
 def view_forum(forum_name):
     global forum_details
+    forum_details['action'] = "view_forum"
     forum_details['forum_name'] = forum_name
 
     forum_json = JSON_Socket.json()
     json_object = forum_json.deserializer(forum_details)
 
-    return json_object
+    return json_object,forum_name
 
     pass
 
 
-def display_questions(questions,uname):
-    questions = questions.split()
+
+def display_questions(questions,uname,forum_name,sub_forum,id_q):
     while True:
         print "1.View Questions"
         print "2.Post a Question"
@@ -248,22 +261,25 @@ def display_questions(questions,uname):
         option = raw_input("Enter your Choice")
         if option == "1":
             for i in range(len(questions)):
-                print str(i+1) + ":"
-                print questions[i]
-            option = raw_input("Enter the No. of the Question you wish to view: ")
+                print str(i+1) + ":" + questions[i]
+            option = raw_input("Enter the Question Number you wish to view: ")
             if option <len(questions) or option>len(questions):
                 print "Enter a valid Question No."
             else:
                 d = {}
                 d['action'] = "select_question"
-                d['question'] = questions[option]
+                d['forum_name'] = forum_name
+                d['sub_forum'] = sub_forum
+                d['question'] = id_q[option - 1]
                 return str(d)
         elif option == "2":
             question_new = raw_input("Enter your Question : ")
             d = {}
             d['action'] = "post_question"
-            d['new_question'] = question_new
+            d['forum_name'] = forum_name
+            d['sub_forum'] = sub_forum
             d['created_by'] = uname
+            d['new_question'] = question_new
             return str(d)
             pass
         elif option == "3":
@@ -275,7 +291,7 @@ def display_questions(questions,uname):
         else:
             print "Please Select a Valid Option"
 
-def display_replies(uname):
+def display_replies(uname,forum_name,sub_forum):
     while True:
         print "\t1. Post a Reply"
         print "\t2. Back"
@@ -284,7 +300,9 @@ def display_replies(uname):
         if option == "1":
             reply_new = raw_input("Post your Reply here : ")
             d = {}
-            d['action'] = "post_reply"
+            d['action'] = "post_answer"
+            d['forum_name'] = forum_name
+            d['sub_forum'] = sub_forum
             d['new_reply'] = reply_new
             d['created_by'] = uname
             return str(d)
@@ -328,7 +346,7 @@ def print_sub_forums(dict):
         print "".join(word.ljust(col_width) for word in row)
     pass
 
-def display_user_selected_forum(output,uname):
+def display_user_selected_forum(forum_name,output,uname):
     while True:
         print "\t1. Select a Sub-forums"
         print "\t2. Create a Sub-forum"
@@ -348,13 +366,15 @@ def display_user_selected_forum(output,uname):
                     output = output.split()
                     d = {}
                     d['action'] = "open_sub_forum"
-                    d['sub_forum']= output[option]
-                    return str(d)
+                    d['forum_name'] = forum_name
+                    d['sub_forum']= output[option - 1]
+                    return str(d),output[option - 1]
             return
         elif option == "2":
             new_sub_forum = raw_input("Enter the name of the Sub-forum :")
             d = {}
             d['action'] = "new_sub_forum"
+            d['forum_name'] = forum_name
             d['new_sub_forum'] = new_sub_forum
             d['created_by'] = uname
             return str(d)

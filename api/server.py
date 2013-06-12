@@ -2,14 +2,16 @@ __author__ = 'ProfAVR'
 
 import socket
 import json
-from project13_forums.sockets_API.server.classes.user import *
-from project13_forums.sockets_API.model.memory import *
-from project13_forums.sockets_API.server.classes.UserAuth import *
-from project13_forums.sockets_API.server.classes.ViewForum import *
-from project13_forums.sockets_API.server.classes.ViewSubForum import *
-from project13_forums.sockets_API.server.classes.CreateSubForum import *
-from project13_forums.sockets_API.server.classes.postcomment import *
-from project13_forums.sockets_API.server.classes.postQuestion import *
+from api.classes.user import *
+from cache.cache import *
+from api.classes.UserAuth import *
+from api.classes.ViewForum import *
+from api.classes.ViewSubForum import *
+from api.classes.CreateSubForum import *
+from api.classes.postcomment import *
+from api.classes.postQuestion import *
+from api.classes.viewQuestion import *
+from api.classes.JSON_Socket import *
 
 
 
@@ -43,7 +45,7 @@ def server():
     while True:
         msg = c.recv(1024)
         server_json = json.json()
-        serialized = server_json.serializer(msg)
+        serialized = "".join(server_json.serializer(msg).values())
         serialized = serialized.split()
         if serialized[0] == "signup":
             U = User(serialized[1], serialized[2], serialized[3], serialized[4])
@@ -58,13 +60,12 @@ def server():
                 c.send(U.deserializer("Invalid Credentials " + validation))
             pass
         elif serialized[0] == "login":
+            pw=''
             UA = UserAuth(serialized[1], serialized[2])
             validation = UA.validate()
             if not validation.isstring():
-                if checkUsername(serialized[1]):
-                    pw = getPassword(serialized[1])
-                if pw == serialized[1]:
-                    c.send(UA.deserializer('True'))
+                if sign_in(UA):
+                    c.send(UA.deserializer("login successful"))
                 else:
                     c.send(UA.deserializer("username password mismatch"))
             else:
@@ -73,41 +74,35 @@ def server():
         elif serialized[0] == "view_forum":
             VF = ViewForum(serialized[1])
             forum_list=view_forum(VF.forum_name)
-            forum_json=convert_list_json_object(forum_list)
-            c.send(VF.deserializer(forum_list))
+            forum_json=convert_list(forum_list)
+            c.send(VF.deserializer(forum_json))
             pass
-        elif serialized[0] == 'view_sub_forum':
-            VSF=ViewSubForum(serialized[1],serialized[2],)
-        elif serialized[0] == "create_sub_forum":
+        elif serialized[0] == "new_sub_forum":
             CSF=CreateSubForum(serialized[1],serialized[2],serialized[3])
             if create_sub_forum(CSF):
                 c.send(CSF.deserializer(serialized[2]+"subforum is created"))
             else:
                 c.send(CSF.deserializer("subforum name already exists"))
-        elif serialized[0] == "view_sub_forum":
-            VSF = ViewSubForum(serialized[1],serialized[2],serialized[3])
-            sub_forum_question_list=view_sub_forum(VSF)
+        #elif serialized[0] == "open_sub_forum":
+         #   VSF = ViewSubForum(serialized[1],serialized[2])
+          #  sub_forum_question_list=view_sub_forum(VSF)
+           # question_json=convert_list(sub_forum_question_list)
+
 
         elif serialized[0] == "post_question":
             PQ = PostQuestion(serialized[1],serialized[2],serialized[3],serialized[4:])
-            if create_sub_forum(PQ):
+            if post_question_in_sub_forum(PQ):
                 c.send(PQ.deserializer("successfully posted"))
-        elif serialized[0] == "post_answer":
-            PC=PostComment(serialized[1],serialized[2],serialized[3])
-            if post_comment(PC):
-                c.send(PC.deserializer("successfully posted")
-
-
-
-
-
-
+        #elif serialized[0] == "post_answer":
+         #   PC=PostComment(serialized[1],serialized[2],serialized[3])
+          #  if post_comment(PC):
+           #     c.send(PC.deserializer("successfully posted"))
+        elif serialized[0] == "view_question":
+            VQ=viewQuestion(serialized[1],serialized[2],serialized[3])
+            reply_list=view_ques_in_sub_forum(VQ)
+            c.send(VQ.deserializer(reply_list))
             pass
-
-    serv.close()
-
-    pass
-
+        serv.close()
 
 if __name__ == "__main__":
     server()

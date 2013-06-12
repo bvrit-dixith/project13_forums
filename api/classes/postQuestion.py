@@ -5,3 +5,7 @@ class PostQuestion(object):
         self.sub_forum_name = sub_forum_name
         self.createf_by = created_by
         self.question = question
+    def deserializer(self, input):
+        dict['message'] = input
+        return str(dict)
+        pass
