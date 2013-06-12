@@ -4,4 +4,8 @@ class CreateSubForum(object):
         self.forum_name = forum_name
         self.sub_forum_name = sub_forum_name
         self.createf_by = created_by
+    def deserializer(self, input):
+        dict['message'] = input
+        return str(dict)
+        pass
 

@@ -7,12 +7,6 @@ import datetime
 import struct
 from projectutils import *
 
-#from server import Client
-
-
-
-message_count=0
-
 #update forum metadata in the 1Gb file
 def forumcreation():
     forum_count=0
@@ -47,12 +41,15 @@ def createfile(filename):
     f.write(struct.pack('I',0))
     f.seek(43526)
     f.write(struct.pack('I',0))
+    f.seek(86226)
+    f.write(struct.pack('I',0))
+    f.seek(2500000)
+    f.write(struct.pack('I',0))
     forumcreation()
     f.close()
 
 #writes forum metadata into a file
 def writeForumData(filename,forumdata):
-    global forum_count
     file=getFilePath(filename)
     with open(file,"rb+") as f:
         f.seek(1026)
@@ -63,11 +60,10 @@ def writeForumData(filename,forumdata):
         f.write(struct.pack('i',forumdata.nextForum))
         f.write(struct.pack('i',forumdata.prevForum))
         f.write(struct.pack('i',forumdata.firstsubForum))
-        f.write("\0")
         forum_count+=1
         f.seek(1026)
         f.write(struct.pack('I',forum_count))
-        f.close()
+    f.close()
 
 #writes user metadata into a file
 def writeUserData(filename,userdata):
@@ -75,43 +71,79 @@ def writeUserData(filename,userdata):
     with open(file,"rb+") as f:
         f.seek(1526)
         user_count=struct.unpack('I',f.read(4))[0]
-        f.seek(1530+104*user_count)
-        print f.tell()
-        f.write(struct.pack('104s',"}".join(userdata)))
-            #f.write(20c,info)
-        f.write("\0")
+        user_id=1530+104*user_count
+        f.seek(user_id)
+        f.write(struct.pack('i',userdata.id))
+        f.write(struct.pack('20s',userdata.name))
+        f.write(struct.pack('10s',userdata.password))
+        f.write(struct.pack('30s',userdata.mail))
+        f.write(struct.pack('10s',userdata.birth_date))
+        f.write(struct.pack('10s',userdata.join_date))
         user_count+=1
-        print user_count
-        print f.tell()
         f.seek(1526)
         f.write(struct.pack('I',user_count))
-        f.close()
+    f.close()
 
 #writes subforum metadata into a file
 def writeSubforumdata(filename,subforumData):
-    global subforum_count
     file=getFilePath(filename)
     with open(file,"rb+") as f:
-        f.seek(43525+122*subforum_count)
-        for info in subforumData:
-            f.write(info)
-            f.write("\0")
+        f.seek(43526)
+        subforum_count=struct.unpack('I',f.read(4))[0]
+        subforum_id=43530+122*subforum_count
+        f.seek(subforum_id)
+        f.write(struct.pack('i',subforumData.id))
+        f.write(struct.pack('30s',subforumData.name))
+        f.write(struct.pack('30s',subforumData.forumname))
+        f.write(struct.pack('20s',subforumData.createdby))
+        f.write(struct.pack('i',subforumData.nextSubForum))
+        f.write(struct.pack('i',subforumData.prevSubForum))
+        f.write(struct.pack('i',subforumData.firstQuestion))
+        f.write(struct.pack('i',subforumData.num_of_questions))
         subforum_count+=1
-        print subforum_count
-        f.close()
+        f.seek(43526)
+        f.write(struct.pack('I',subforum_count))
+    f.close()
 
 #writes message metadata into a file
 def writeMessagedata(filename,msgdata):
-    global message_count
     file=getFilePath(filename)
     with open(file,"rb+") as f:
-        f.seek(86225+50*message_count)
-        for info in msgdata:
-            f.write(info)
-            f.write("\0")
+        f.seek(43526)
+        message_count=struct.unpack('I',f.read(4))[0]
+        subforum_id=43530+122*message_count
+        f.seek(subforum_id)
+        f.write(struct.pack('i',msgdata.id))
+        f.write(struct.pack('30s',msgdata.forumname))
+        f.write(struct.pack('30s',msgdata.subForumname))
+        f.write(struct.pack('20s',msgdata.postedby))
+        f.write(struct.pack('i',msgdata.nextQuestion))
+        f.write(struct.pack('i',msgdata.prevQuestion))
+        f.write(struct.pack('i',msgdata.firstReply))
+        f.write(struct.pack('i',msgdata.messagedata))
         message_count+=1
-        print message_count
-        f.close()
+        f.seek(43526)
+        f.write(struct.pack('I',message_count))
+    f.close()
+
+def writeReplyData(filename,replydata):
+    file=getFilePath(filename)
+    with open(file,"rb+") as f:
+        f.seek(2500000)
+        reply_count=struct.unpack('I',f.read(4))[0]
+        subforum_id=25000004+122*reply_count
+        f.seek(subforum_id)
+        f.write(struct.pack('i',replydata.id))
+        f.write(struct.pack('30s',replydata.forumname))
+        f.write(struct.pack('30s',replydata.subForumname))
+        f.write(struct.pack('20s',replydata.postedby))
+        f.write(struct.pack('i',replydata.nextReply))
+        f.write(struct.pack('i',replydata.prevReply))
+        f.write(struct.pack('i',replydata.replydata))
+        reply_count+=1
+        f.seek(2500000)
+        f.write(struct.pack('I',reply_count))
+    f.close()
 
 #gets file path
 def getFilePath(filename):
