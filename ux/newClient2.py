@@ -241,7 +241,7 @@ def view_forum(forum_name):
 def display_questions(questions,uname):
     questions = questions.split()
     while True:
-        print "1.Select a Question"
+        print "1.View Questions"
         print "2.Post a Question"
         print "3.Back"
         print "4.LogOut"
@@ -317,9 +317,16 @@ def display_user(user):
             return view_forum("Miscellaneous")
         else:
             print "\nPlease select a Valid option"
-
     pass
 
+def print_sub_forums(dict):
+    header = ("SubForums","Created By")
+    dict_list=dict.items()
+    dict_list.insert(0,header)
+    col_width = max(len(word) for row in dict_list for word in row) + 2 # padding
+    for row in dict_list:
+        print "".join(word.ljust(col_width) for word in row)
+    pass
 
 def display_user_selected_forum(output,uname):
     while True:
@@ -330,7 +337,10 @@ def display_user_selected_forum(output,uname):
         option = raw_input("Select your option " + uname + ":" )
         if option == "1":
             while True:
-                print output
+                for i in range(len(output)):
+                    print str(i+1)
+                    output_dict=convert_from_json_object(output)
+                    print_sub_forums(output_dict)
                 option = raw_input("Select a Sub-forum : ")
                 if option<len(output.split()) or option>len(output.split()):
                     print "Enter a valid option"
