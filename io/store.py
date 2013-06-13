@@ -30,6 +30,8 @@ if __name__=="__main__":
         subforum=SubForum("hashing","amani","Education")
         writesubForumData(subforum)
         i+=1
-    pass
 
-    
+    while i<400:
+        msg=Message("Education","hashing","amani",50)
+        writeMessageData(msg)
+        i+=1

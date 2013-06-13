@@ -121,7 +121,7 @@ def writeMessagedata(filename,msgdata):
         f.seek(message_id)
         msgdata.id=message_id
         f.write(struct.pack('i',msgdata.id))
-        f.write(struct.pack('30s',msgdata.forumname))
+        f.write(struct.pack('30s',msgdata.forumName))
         f.write(struct.pack('30s',msgdata.subForumname))
         f.write(struct.pack('20s',msgdata.postedby))
         f.write(struct.pack('I',msgdata.length))
@@ -203,10 +203,8 @@ def getForumUpdated(present_forum_name,present_subforum_id):
     else:
         pass
     if struct.unpack('i',f.read(4))[0]==-1:
-        print "True"
         f.seek(1072+70*i)
         f.write(struct.pack('i',present_subforum_id))
-        print "written"
     f.seek(1076+70*i)
     count1=struct.unpack('I',f.read(4))[0]
     count1+=1
@@ -230,8 +228,27 @@ def getSubForumUpdated(present_forumname,present_subforum_name,present_message_i
         i+=1
     else:
         pass
-    f.seek(first_subForum_id)
-    pass
+    f.seek(1076+70*i)
+    numOfSubF=struct.unpack('I',f.read(4))[0]
+    i=0
+    while i<numOfSubF:
+        f.seek((first_subForum_id+122*i)+4)
+        subFName=f.read(30).strip('\x00')
+        pos=f.tell()
+        if subFName==present_subforum_name:
+            f.seek(pos+58)
+            break
+        i+=1
+    else:
+        pass
+    if struct.unpack('i',f.read(4))[0]==-1:
+        f.seek(pos+58)
+        f.write(struct.pack('I',present_message_id))
+    f.seek(43626+122*i)
+    count1=struct.unpack('I',f.read(4))[0]
+    count1+=1
+    f.seek(43626+122*i)
+    f.write(struct.pack('I',count1))
 
 
 
