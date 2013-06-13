@@ -2,16 +2,19 @@ __author__ = 'ProfAVR'
 
 import socket
 import json
-from api.classes.user import *
+import sys
+
+sys.path.append('E:\project13_branch\project13_forums\api\classes')
+from classes.user import User,serialize_date
 from cache.cache import *
-from api.classes.UserAuth import *
-from api.classes.ViewForum import *
-from api.classes.ViewSubForum import *
-from api.classes.CreateSubForum import *
-from api.classes.postcomment import *
-from api.classes.postQuestion import *
-from api.classes.viewQuestion import *
-from api.classes.JSON_Socket import *
+from classes.UserAuth import UserAuth
+from classes.ViewForum import *
+from classes.ViewSubForum import *
+from classes.CreateSubForum import *
+from classes.postcomment import *
+from classes.postQuestion import *
+from classes.viewQuestion import *
+from classes.JSON_Socket import *
 
 
 
@@ -34,8 +37,12 @@ class server_socket:
     def send(self, msg):
         self.sock.send(msg)
 
+    def close(self):
+        self.sock.close()
+
 
 def server():
+    serialized={}
     serv = server_socket()
     host = socket.gethostname()
     port = 8999
@@ -44,13 +51,18 @@ def server():
     c, addr = serv.accept()
     while True:
         msg = c.recv(1024)
-        server_json = json.json()
-        serialized = "".join(server_json.serializer(msg).values())
-        serialized = serialized.split()
-        if serialized[0] == "signup":
-            U = User(serialized[1], serialized[2], serialized[3], serialized[4])
+        serialized = convert_from_json_object(msg)
+        serialized_list = [None]*5
+        print serialized_list
+        serialized_list[0]=serialized['action']
+        serialized_list[1]=serialized['username']
+        serialized_list[2]=serialized['password']
+        serialized_list[3]=serialized['DOB']
+        serialized_list[4]=serialized['email']
+        if serialized_list[0] == "signup":
+            U = User(serialized_list[1], serialized_list[2], serialized_list[3], serialized_list[4])
             validation = U.validate()
-            if not validation.isstring():
+            if not isinstance(validation,str):
             #if project13_forums.model.memory.sign_up(U):
                 if sign_up(U):
                     c.send(U.deserializer("Succesful"))
@@ -59,8 +71,7 @@ def server():
             else:
                 c.send(U.deserializer("Invalid Credentials " + validation))
             pass
-        elif serialized[0] == "login":
-            pw=''
+        elif serialized_list[0] == "login":
             UA = UserAuth(serialized[1], serialized[2])
             validation = UA.validate()
             if not validation.isstring():
@@ -71,13 +82,13 @@ def server():
             else:
                 c.send(UA.deserializer("Invalid Credentials " + validation))
                 pass
-        elif serialized[0] == "view_forum":
+        elif serialized_list[0] == "view_forum":
             VF = ViewForum(serialized[1])
             forum_list=view_forum(VF.forum_name)
             forum_json=convert_list(forum_list)
             c.send(VF.deserializer(forum_json))
             pass
-        elif serialized[0] == "new_sub_forum":
+        elif serialized_list[0] == "new_sub_forum":
             CSF=CreateSubForum(serialized[1],serialized[2],serialized[3])
             if create_sub_forum(CSF):
                 c.send(CSF.deserializer(serialized[2]+"subforum is created"))
@@ -89,7 +100,7 @@ def server():
            # question_json=convert_list(sub_forum_question_list)
 
 
-        elif serialized[0] == "post_question":
+        elif serialized_list[0] == "post_question":
             PQ = PostQuestion(serialized[1],serialized[2],serialized[3],serialized[4:])
             if post_question_in_sub_forum(PQ):
                 c.send(PQ.deserializer("successfully posted"))
@@ -97,11 +108,13 @@ def server():
          #   PC=PostComment(serialized[1],serialized[2],serialized[3])
           #  if post_comment(PC):
            #     c.send(PC.deserializer("successfully posted"))
-        elif serialized[0] == "view_question":
+        elif serialized_list[0] == "view_question":
             VQ=viewQuestion(serialized[1],serialized[2],serialized[3])
             reply_list=view_ques_in_sub_forum(VQ)
             c.send(VQ.deserializer(reply_list))
             pass
+        elif serialized_list[0] == "exit":
+            c.close()
         serv.close()
 
 if __name__ == "__main__":
