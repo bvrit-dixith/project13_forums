@@ -1,6 +1,6 @@
 __author__ = 'pranee'
 import string
-input_set ="{'message':'hu','forum_name':'hry','req_type':'create'}"
+input_set ="{'message':'hu','forum_name':'hry','action':'create'}"
 
 def string(input, index):
     string = ''
