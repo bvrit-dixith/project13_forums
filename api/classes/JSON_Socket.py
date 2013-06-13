@@ -4,7 +4,7 @@ import os
 import sys
 import inspect
 import glob
-from serialization import *
+from api.serialization import *
 
 def convert_list(input_set):
     dict={}
