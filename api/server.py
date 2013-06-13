@@ -49,7 +49,7 @@ def server():
     while True:
         msg = c.recv(1024)
 
-        server_json = json()
+        #server_json = json()
         serialized = convert_from_json_object(msg)
         serialized_list = [None]*5
         serialized_list[0]=serialized['action']
@@ -70,7 +70,9 @@ def server():
                 c.send(U.deserializer("Invalid Credentials " + validation))
             pass
         elif serialized_list[0] == "login":
-            UA = UserAuth(serialized[1], serialized[2])
+            serialized_list[1]=serialized['username']
+            serialized_list[2]=serialized['password']
+            UA = UserAuth(serialized_list[1], serialized_list[2])
             validation = UA.validate()
             if not validation.isstring():
                 if sign_in(UA):
@@ -81,15 +83,19 @@ def server():
                 c.send(UA.deserializer("Invalid Credentials " + validation))
                 pass
         elif serialized_list[0] == "view_forum":
-            VF = ViewForum(serialized[1])
+            serialized_list[1]=serialized['forum_name']
+            VF = ViewForum(serialized_list[1])
             forum_list=view_forum(VF.forum_name)
             forum_json=convert_list(forum_list)
             c.send(VF.deserializer(forum_json))
             pass
         elif serialized_list[0] == "new_sub_forum":
-            CSF=CreateSubForum(serialized[1],serialized[2],serialized[3])
+            serialized_list[1]=serialized['forum_name']
+            serialized_list[2]=serialized['new_sub_forum']
+            serialized_list[3]=serialized['created_by']
+            CSF=CreateSubForum(serialized_list[1],serialized_list[2],serialized_list[3])
             if create_sub_forum(CSF):
-                c.send(CSF.deserializer(serialized[2]+"subforum is created"))
+                c.send(CSF.deserializer(serialized_list[2]+"subforum is created"))
             else:
                 c.send(CSF.deserializer("subforum name already exists"))
         #elif serialized[0] == "open_sub_forum":
@@ -99,7 +105,11 @@ def server():
 
 
         elif serialized_list[0] == "post_question":
-            PQ = PostQuestion(serialized[1],serialized[2],serialized[3],serialized[4:])
+            serialized_list[1]=serialized['forum_name']
+            serialized_list[2]=serialized['sub_forum']
+            serialized_list[3]=serialized['created_by']
+            serialized_list[4]=serialized['new_question']
+            PQ = PostQuestion(serialized_list[1],serialized_list[2],serialized_list[3],serialized_list[4:])
             if post_question_in_sub_forum(PQ):
                 c.send(PQ.deserializer("successfully posted"))
         #elif serialized[0] == "post_answer":
@@ -107,7 +117,10 @@ def server():
           #  if post_comment(PC):
            #     c.send(PC.deserializer("successfully posted"))
         elif serialized_list[0] == "view_question":
-            VQ=viewQuestion(serialized[1],serialized[2],serialized[3])
+            serialized_list[1]=serialized['forum_name']
+            serialized_list[2]=serialized['sub_forum']
+            serialized_list[3]=serialized['question']
+            VQ=viewQuestion(serialized_list[1],serialized_list[2],serialized_list[3])
             reply_list=view_ques_in_sub_forum(VQ)
             c.send(VQ.deserializer(reply_list))
             pass
