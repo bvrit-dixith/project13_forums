@@ -36,7 +36,8 @@ class server_socket:
 
     def send(self, msg):
         self.sock.send(msg)
-
+    def close(self):
+        self.sock.close()
 
 def server():
     serialized={}
@@ -53,11 +54,12 @@ def server():
         serialized = convert_from_json_object(msg)
         serialized_list = [None]*5
         serialized_list[0]=serialized['action']
-        serialized_list[1]=serialized['username']
-        serialized_list[2]=serialized['password']
-        serialized_list[3]=serialized['DOB']
-        serialized_list[4]=serialized['email']
+
         if serialized_list[0] == "signup":
+            serialized_list[1]=serialized['username']
+            serialized_list[2]=serialized['password']
+            serialized_list[3]=serialized['DOB']
+            serialized_list[4]=serialized['email']
             U = User(serialized_list[1], serialized_list[2], serialized_list[3], serialized_list[4])
             validation = U.validate()
             if not isinstance(validation,str):
@@ -108,7 +110,7 @@ def server():
             serialized_list[1]=serialized['forum_name']
             serialized_list[2]=serialized['sub_forum']
             serialized_list[3]=serialized['created_by']
-            serialized_list[4]=serialized['new_question']
+            serialized_list[4:]=serialized['new_question']
             PQ = PostQuestion(serialized_list[1],serialized_list[2],serialized_list[3],serialized_list[4:])
             if post_question_in_sub_forum(PQ):
                 c.send(PQ.deserializer("successfully posted"))
@@ -119,11 +121,13 @@ def server():
         elif serialized_list[0] == "view_question":
             serialized_list[1]=serialized['forum_name']
             serialized_list[2]=serialized['sub_forum']
-            serialized_list[3]=serialized['question']
+            serialized_list[3:]=serialized['question']
             VQ=viewQuestion(serialized_list[1],serialized_list[2],serialized_list[3])
             reply_list=view_ques_in_sub_forum(VQ)
             c.send(VQ.deserializer(reply_list))
             pass
+        elif serialized_list[0] == 'exit':
+            c.close()
         serv.close()
 
 if __name__ == "__main__":
