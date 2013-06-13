@@ -6,6 +6,7 @@ import re
 import datetime
 import struct
 from projectutils import *
+import string
 
 #update forum metadata in the 1Gb file
 def forumcreation():
@@ -19,6 +20,7 @@ def forumcreation():
         forum_object_list.append(forum_object)
         forum_count+=1
     num_of_forums=len(forum_object_list)
+    print num_of_forums
     i=0
     while i<num_of_forums-1:
         forum_object_list[i].nextForum=forum_object_list[i+1].id
@@ -46,6 +48,7 @@ def createfile(filename):
     f.seek(2500000)
     f.write(struct.pack('I',0))
     forumcreation()
+    print "forum closed"
     f.close()
 
 #writes forum metadata into a file
@@ -53,6 +56,7 @@ def writeForumData(filename,forumdata):
     file=getFilePath(filename)
     with open(file,"rb+") as f:
         f.seek(1026)
+
         forum_count=struct.unpack('I',f.read(4))[0]
         f.seek(1030+70*forum_count)
         f.write(struct.pack('i',forumdata.id))
@@ -60,6 +64,7 @@ def writeForumData(filename,forumdata):
         f.write(struct.pack('i',forumdata.nextForum))
         f.write(struct.pack('i',forumdata.prevForum))
         f.write(struct.pack('i',forumdata.firstsubForum))
+        f.write(struct.pack('i',forumdata.num_of_subforums))
         forum_count+=1
         f.seek(1026)
         f.write(struct.pack('I',forum_count))
@@ -92,6 +97,7 @@ def writeSubforumdata(filename,subforumData):
         subforum_count=struct.unpack('I',f.read(4))[0]
         subforum_id=43530+122*subforum_count
         f.seek(subforum_id)
+        subforumData.id=subforum_id
         f.write(struct.pack('i',subforumData.id))
         f.write(struct.pack('30s',subforumData.name))
         f.write(struct.pack('30s',subforumData.forumname))
@@ -103,26 +109,28 @@ def writeSubforumdata(filename,subforumData):
         subforum_count+=1
         f.seek(43526)
         f.write(struct.pack('I',subforum_count))
-    f.close()
+    #f.close()
 
 #writes message metadata into a file
 def writeMessagedata(filename,msgdata):
     file=getFilePath(filename)
     with open(file,"rb+") as f:
-        f.seek(43526)
+        f.seek(86226)
         message_count=struct.unpack('I',f.read(4))[0]
-        subforum_id=43530+122*message_count
-        f.seek(subforum_id)
+        message_id=86230+120*message_count
+        f.seek(message_id)
+        msgdata.id=message_id
         f.write(struct.pack('i',msgdata.id))
         f.write(struct.pack('30s',msgdata.forumname))
         f.write(struct.pack('30s',msgdata.subForumname))
         f.write(struct.pack('20s',msgdata.postedby))
+        f.write(struct.pack('I',msgdata.length))
         f.write(struct.pack('i',msgdata.nextQuestion))
         f.write(struct.pack('i',msgdata.prevQuestion))
         f.write(struct.pack('i',msgdata.firstReply))
         f.write(struct.pack('i',msgdata.messagedata))
         message_count+=1
-        f.seek(43526)
+        f.seek(86226)
         f.write(struct.pack('I',message_count))
     f.close()
 
@@ -131,8 +139,9 @@ def writeReplyData(filename,replydata):
     with open(file,"rb+") as f:
         f.seek(2500000)
         reply_count=struct.unpack('I',f.read(4))[0]
-        subforum_id=25000004+122*reply_count
-        f.seek(subforum_id)
+        reply_id=25000004+120*reply_count
+        f.seek(reply_id)
+        replydata.id=reply_id
         f.write(struct.pack('i',replydata.id))
         f.write(struct.pack('30s',replydata.forumname))
         f.write(struct.pack('30s',replydata.subForumname))
@@ -177,6 +186,53 @@ def checkUsername(username):
             return True
     else:
         return False
+
+def getForumUpdated(present_forum_name,present_subforum_id):
+    file=getFilePath("data.bin")
+    f=open(file,"rb+")
+    i=0
+    f.seek(1026)
+    count=struct.unpack('i',f.read(4))[0]
+    while i<count:
+        f.seek(1034+70*i)
+        temp=f.read(30).strip('\x00')
+        if temp==present_forum_name:
+            f.seek(1072+70*i)
+            break
+        i+=1
+    else:
+        pass
+    if struct.unpack('i',f.read(4))[0]==-1:
+        print "True"
+        f.seek(1072+70*i)
+        f.write(struct.pack('i',present_subforum_id))
+        print "written"
+    f.seek(1076+70*i)
+    count1=struct.unpack('I',f.read(4))[0]
+    count1+=1
+    f.seek(1076+70*i)
+    f.write(struct.pack('I',count1))
+    f.close()
+
+def getSubForumUpdated(present_forumname,present_subforum_name,present_message_id):
+    file=getFilePath("data.bin")
+    f=open(file,"rb+")
+    i=0
+    f.seek(1026)
+    count=struct.unpack('i',f.read(4))[0]
+    while i<count:
+        f.seek(1034+70*i)
+        temp=f.read(30).strip('\x00')
+        if temp==present_forumname:
+            f.seek(1072+70*i)
+            first_subForum_id=struct.unpack('I',f.read(4))[0]
+            break
+        i+=1
+    else:
+        pass
+    f.seek(first_subForum_id)
+    pass
+
 
 
 if __name__=="__main__":
