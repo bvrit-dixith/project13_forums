@@ -49,7 +49,7 @@ def signin():
             break
         else:
             print "Invalid password: Password should be of 6-10 characters and alphanumeric"
-    authen_dict['reqType'] = "login"
+    authen_dict['action'] = "login"
     authen_dict['username'] = username
     authen_dict['password'] = password
     return authen_dict
@@ -81,7 +81,7 @@ def serialize_date(input):
                 break
             date += input[i]
             continue
-    return int(year), int(month), int(date)
+    return [int(year), int(month), int(date)]
 
 
 def signup():
@@ -116,11 +116,16 @@ def signup():
             break
         else:
             print "Invalid Email. Please Enter a Valid Email Address"
-    dict_user['reqType'] = "signup"
+    dict_user['action'] = "signup"
     dict_user['username'] = username
     dict_user['password'] = password
     dict_user['DOB'] = DOB
     dict_user['email'] = email
+    return dict_user
+
+def exit_connection():
+    dict_user={}
+    dict_user['action'] = "exit"
     return dict_user
 
 def print_sub_forums(dict):
@@ -212,7 +217,7 @@ def main():
                             print_rep_info = serialize_auth(about_reply)
                             print_rep_info.split()
                             for i in print_rep_info:
-                                print i
+                             print i
             else:
                 print "Invalid Login Credentials. Please re-check them"
 
@@ -228,7 +233,11 @@ def main():
 
 
         elif choice == '4':
+            input=exit_connection()
+            client_json = JSON_Socket.json()
+            client.send(client_json.deserializer(input))
             client.close()
+            break
 
         else:
             print "\nPlease Select a Valid Option"
@@ -335,16 +344,9 @@ def display_user(user):
             return view_forum("Miscellaneous")
         else:
             print "\nPlease select a Valid option"
+
     pass
 
-def print_sub_forums(dict):
-    header = ("SubForums","Created By")
-    dict_list=dict.items()
-    dict_list.insert(0,header)
-    col_width = max(len(word) for row in dict_list for word in row) + 2 # padding
-    for row in dict_list:
-        print "".join(word.ljust(col_width) for word in row)
-    pass
 
 def display_user_selected_forum(forum_name,output,uname):
     while True:
