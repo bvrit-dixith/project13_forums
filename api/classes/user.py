@@ -3,7 +3,6 @@ __author__ = 'ProfAVR'
 import datetime
 import re
 
-
 class User(object):
     def __init__(self, username="", password="", DOB="", email="", ):
         self.username = username
@@ -11,7 +10,6 @@ class User(object):
         self.email = email
         self.birth_date = DOB
         self.join_date = datetime.date.today()
-
     def validate(self):
         if len(self.username) <= 20 and re.match("^[a-zA-Z]{1}[a-zA-Z]*[0 9]*[a-zA-Z]*$", self.username):
             pass
@@ -27,7 +25,7 @@ class User(object):
             pass
         else:
             return "Invalid Email: email should be a valid one"
-        year, month, date = serialize_date(str(self.birth_date))
+        year, month, date = serialize_date(self.birth_date)
         try:
             if datetime.date.today() - datetime.date(year, month, date):
                 return True
@@ -41,8 +39,9 @@ class User(object):
         pass
 
 def serialize_date(input):
-    print input
     print type(input)
+    print input
+    input = str(input)
     check = '['
     year = ""
     month = ""
@@ -54,18 +53,18 @@ def serialize_date(input):
                 continue
             if i == 0:
                 continue
-            year += input[i]
+            year += str(input[i])
             continue
         if check == ',':
             if input[i] == ',':
                 check = ']'
                 continue
-            month += input[i]
+            month += str(input[i])
             continue
         if check == ']':
             if input[i] == ']':
                 break
-            date += input[i]
+            date += str(input[i])
             continue
     return int(year), int(month), int(date)
 
