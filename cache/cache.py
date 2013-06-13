@@ -1,5 +1,5 @@
 __author__ = 'Dixith Kurra'
-__author__ = 'Dixith Kurra'
+
 
 class user_metadata:
     def __init__(self):
@@ -57,7 +57,7 @@ class message_metadata:
 
 
 
-import api.server.py
+import api.server
 
 list1=[]  #category1
 list2=[]  #2
