@@ -123,6 +123,11 @@ def signup():
     dict_user['email'] = email
     return dict_user
 
+def exit_connection():
+    dict_user={}
+    dict_user['action']="exit"
+    return dict_user
+
 def print_sub_forums(dict):
     header = ("SubForums","Created By")
     dict_list=dict.items()
@@ -219,7 +224,7 @@ def main():
         elif choice == '2':
             input = signup()
             client_json = JSON_Socket.json()
-            client.send(client_json.deserializer(input))
+            client.send(str(client_json.deserializer(input)))
             received = client.receive()
             print received
 
@@ -228,7 +233,11 @@ def main():
 
 
         elif choice == '4':
+            input = exit_connection()
+            client_json = JSON_Socket.json()
+            client.send(str(client_json.deserializer(input)))
             client.close()
+            break
 
         else:
             print "\nPlease Select a Valid Option"
