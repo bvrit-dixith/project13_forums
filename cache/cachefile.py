@@ -1,61 +1,6 @@
 __author__ = 'Dixith Kurra'
 
 
-'''class user_metadata:
-    def __init__(self):
-        self.username=''
-        self.password=''
-        self.email=''
-        self.DOB=''
-        self.join_date=''
-        pass
-
-
-
-class forum_metadata:
-    def __init__(self):
-        self.forum_name=''
-        self.forum_size=''
-        self.no_of_views=''
-        self.no_of_sub_forums=''
-        self.pointer_to_first_sub_forum=''
-        pass
-
-class sub_forum_metadata:
-    def __init__(self):
-        self.sub_forum_name=''
-        self.forum_name=''
-        self.created_by=''
-        self.number_of_views=''
-        self.no_of_questions=''
-        self.pointer_to_next_sub_forum=''
-        self.pointer_to_prev_sub_forum=''
-        self.pointer_to_first_msg=''
-        self.last_modified_time=''
-        self.date_of_creation=''
-        self.time_of_creation=''
-        self.last_accessed_time=''
-        self.last_back_up_time=''
-        pass
-
-
-class message_metadata:
-    def __init__(self):
-        self.forum_name=''
-        self.msg_id=''
-        self.sub_forum_name=''
-        self.pointer_to_next_msg=''
-        self.pointer_to_prev_msg=''
-        self.no_of_replies=''
-        self.no_of_views=''
-        self.posted_by=''
-        self.no_of_likes=''
-        self.no_of_dislikes=''
-        self.no_of_spams=''
-        self.size=''
-        pass
-'''
-
 
 import io.projectutils
 
@@ -98,36 +43,46 @@ def sign_in(user_sign_in_obj):
     return False # print 'invalid user'
 
 
-def create_sub_forum(i,sub_forum_obj):
+def create_sub_forum(sub_forum_obj):
+    forum_name=sub_forum_obj.forum_name
+    i=get_number(forum_name)
+    sub_forum_name = sub_forum_obj.sub_forum_name
     #temp_list=[sub_forum_obj.sub_forum_name,sub_forum_obj.forum_name,sub_forum_obj.createdby,sub_forum_obj.number_of_views,sub_forum_obj.no_of_questions,sub_forum_obj.pointer_to_next_sub_forum,sub_forum_obj.pointer_to_prev_sub_forum,sub_forum_obj.pointer_to_first_msg,sub_forum_obj.last_modified_time,sub_forum_obj.date_of_creation,sub_forum_obj.time_of_creation,sub_forum_obj.last_accessed_time,sub_forum_obj.last_back_up_time]
+
+    for k in sub_forum_metadata[i]:
+        if k.sub_forum_name==sub_forum_name:
+            return False
     sub_forum_metadata[i].append(sub_forum_obj)
+    return True
     #sub_forum_value_cache.append(list_obj)
     pass
+
+def get_number(forum_name):
+    if forum_name == "Education":
+        return 1
+    elif forum_name == "Health":
+        return 2
+    elif forum_name == "Entertainment":
+        return 3
+    elif forum_name == "Technology":
+        return 4
+    elif forum_name == "News":
+        return 5
+    elif forum_name == "Health":
+        return 6
+    elif forum_name == "Miscellaneous":
+        return 7
 
 
 def view_forum_in_memory(forum_obj):
     forum_name=forum_obj.forum_name
-    if forum_name == "Education":
-        i=1
-    elif forum_name == "Health":
-        i=2
-    elif forum_name == "Entertainment":
-        i=3
-    elif forum_name == "Technology":
-        i=4
-    elif forum_name == "News":
-        i=5
-    elif forum_name == "Health":
-        i=6
-    elif forum_name == "Miscellaneous":
-        i=7
-
+    i=get_number(forum_name)
     '''view_sub_forum_list=[]
     for i in sub_forum_metadata:
         if i.forum_name==forum_name:
            view_sub_forum_list.append(i.sub_forum_name)
     return view_sub_forum_list '''
-    view_sub_forum_list=[]
+    view_sub_forum_list=[["cse","chaitanya"]]
     for k in sub_forum_metadata[i]:
         temp=[]
         temp.append(k.forumname)
@@ -152,7 +107,14 @@ def delete_sub_forum(i,sub_forum_name):
             return True
     return False
 
+
+def view_sub_forum():
+    #call io(obj)
+    pass
+
 def view_ques_in_sub_forum(forum_name,sub_forum_name):
+    #call io(obj)
+
     pass
 
 
