@@ -1,8 +1,7 @@
 __author__ = 'Dixith Kurra'
 
 
-'''
-class user_metadata:
+'''class user_metadata:
     def __init__(self):
         self.username=''
         self.password=''
@@ -15,30 +14,28 @@ class user_metadata:
 
 class forum_metadata:
     def __init__(self):
-        self.forum_name=None
-        #self.forum_size=''
-        #self.no_of_views=0
-        self.no_of_sub_forums=0
-        self.pointer_to_first_sub_forum=-1
-        self.pointer_to_next_forum=None
-        self.pointer_to_prev_forum=None
+        self.forum_name=''
+        self.forum_size=''
+        self.no_of_views=''
+        self.no_of_sub_forums=''
+        self.pointer_to_first_sub_forum=''
         pass
 
 class sub_forum_metadata:
     def __init__(self):
-        self.sub_forum_name=None
-        self.forum_name=None
-        self.created_by=None
-        #self.number_of_views=''
-        self.no_of_questions=0
-        self.pointer_to_next_sub_forum=-1
-        self.pointer_to_prev_sub_forum=-1
-        self.pointer_to_first_msg=-1
-        #self.last_modified_time=''
-        #self.date_of_creation=''
-        #self.time_of_creation=''
-        #self.last_accessed_time=''
-        #self.last_back_up_time=''
+        self.sub_forum_name=''
+        self.forum_name=''
+        self.created_by=''
+        self.number_of_views=''
+        self.no_of_questions=''
+        self.pointer_to_next_sub_forum=''
+        self.pointer_to_prev_sub_forum=''
+        self.pointer_to_first_msg=''
+        self.last_modified_time=''
+        self.date_of_creation=''
+        self.time_of_creation=''
+        self.last_accessed_time=''
+        self.last_back_up_time=''
         pass
 
 
@@ -59,8 +56,8 @@ class message_metadata:
         pass
 '''
 
+
 import io.projectutils
-import server
 
 list1=[]  #category1
 list2=[]  #2
@@ -81,7 +78,7 @@ messages_metadata=[]
 def sign_up(user_obj):
         user_flag=1
         for i in  user_metadata:
-           if user_obj.name!=i.name:
+           if user_obj.username!=i.username:
                pass
            else:
                return False
@@ -94,31 +91,37 @@ def insert(user_obj):
 
 
 def sign_in(user_sign_in_obj):
+    print user_metadata
     for  i in user_metadata:
-        if i.name==user_sign_in_obj.username and i.password==user_sign_in_obj.password:
+        if i.username==user_sign_in_obj.username and i.password==user_sign_in_obj.password:
             return True #print 'authorized user'
     return False # print 'invalid user'
 
-def display_main_forums():
-    print "The forums listed are :"
-    print "\t1. EDUCATION"
-    print "\t2. SPORTS"
-    print "\t3. ENTERTAINMENT"
-    print "\t4. TECHNOLOGY"
-    print "\t5. NEWS"
-    print "\t6. HEALTH"
-    print "\t7. MISCELLANEOUS"
-    print "\n"
 
 def create_sub_forum(i,sub_forum_obj):
     #temp_list=[sub_forum_obj.sub_forum_name,sub_forum_obj.forum_name,sub_forum_obj.createdby,sub_forum_obj.number_of_views,sub_forum_obj.no_of_questions,sub_forum_obj.pointer_to_next_sub_forum,sub_forum_obj.pointer_to_prev_sub_forum,sub_forum_obj.pointer_to_first_msg,sub_forum_obj.last_modified_time,sub_forum_obj.date_of_creation,sub_forum_obj.time_of_creation,sub_forum_obj.last_accessed_time,sub_forum_obj.last_back_up_time]
     sub_forum_metadata[i].append(sub_forum_obj)
     #sub_forum_value_cache.append(list_obj)
     pass
-    #call_io(sub_forum_obj)
 
 
-def view_forum(i):
+def view_forum_in_memory(forum_obj):
+    forum_name=forum_obj.forum_name
+    if forum_name == "Education":
+        i=1
+    elif forum_name == "Health":
+        i=2
+    elif forum_name == "Entertainment":
+        i=3
+    elif forum_name == "Technology":
+        i=4
+    elif forum_name == "News":
+        i=5
+    elif forum_name == "Health":
+        i=6
+    elif forum_name == "Miscellaneous":
+        i=7
+
     '''view_sub_forum_list=[]
     for i in sub_forum_metadata:
         if i.forum_name==forum_name:
@@ -127,8 +130,8 @@ def view_forum(i):
     view_sub_forum_list=[]
     for k in sub_forum_metadata[i]:
         temp=[]
-        temp.append(k.sub_forum_name)
-        temp.append(k.created_by)
+        temp.append(k.forumname)
+        temp.append(k.createdby)
         view_sub_forum_list.append(temp)
     return view_sub_forum_list
 
@@ -162,8 +165,8 @@ def post_question_in_sub_forum(forum_name,sub_forum_name,created_by,msg):
 
 
 
-if __name__=="__main__":
+#if __name__=="__main__":
 #      return sign_up(sign_up_object)
 #      return log_in(login_object)
-       display_main_forums()
+
 
