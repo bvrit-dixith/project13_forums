@@ -7,6 +7,7 @@ class Forum(object):
         self.nextForum=-1
         self.prevForum=-1
         self.firstsubForum=-1
+        self.num_of_subforums=0
 
 
 class SubForum(object):
@@ -21,10 +22,11 @@ class SubForum(object):
         self.num_of_questions=0
 
 class Message(object):
-    def __init__(self,forumname,subForumname,postedby):
+    def __init__(self,forumname,subForumname,postedby,length):
         self.forumName=forumname
         self.subForumname=subForumname
         self.postedby=postedby
+        self.length=length
         self.id=-1
         self.nextQuestion=-1
         self.prevQuestion=-1

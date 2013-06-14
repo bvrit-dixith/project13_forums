@@ -10,14 +10,11 @@ from serialization import *
 
 
 class json(object):
-    dict={}
-    def __init__(self, command="", forum_name="", message=""):
-        self.command = command
-        self.forum_name = forum_name
-        self.message = message
-        self.reply = ""
+    def __init__(self):
+        pass
 
     def deserializer(self, input):
+        dict={}
         dict['message']=input
         return str(dict)
     pass

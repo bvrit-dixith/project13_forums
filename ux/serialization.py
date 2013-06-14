@@ -1,6 +1,6 @@
 __author__ = 'pranee'
 import string
-input_set ="{'message':'hu','forum_name':'hry','req_type':'create'}"
+input_set ="{'message':'hu','forum_name':'hry','action':'create'}"
 
 def string(input, index):
     string = ''
@@ -87,7 +87,7 @@ def convert_from_json_object(input):
             json_dict, i = dict(input, i + 1)
         else:
             i += 1
-    return " ".join(json_dict.values())
+    return json_dict
 
 
 

@@ -49,7 +49,7 @@ def signin():
             break
         else:
             print "Invalid password: Password should be of 6-10 characters and alphanumeric"
-    authen_dict['reqType'] = "login"
+    authen_dict['action'] = "login"
     authen_dict['username'] = username
     authen_dict['password'] = password
     return authen_dict
@@ -81,7 +81,7 @@ def serialize_date(input):
                 break
             date += input[i]
             continue
-    return int(year), int(month), int(date)
+    return [int(year), int(month), int(date)]
 
 
 def signup():
@@ -116,11 +116,16 @@ def signup():
             break
         else:
             print "Invalid Email. Please Enter a Valid Email Address"
-    dict_user['reqType'] = "signup"
+    dict_user['action'] = "signup"
     dict_user['username'] = username
     dict_user['password'] = password
     dict_user['DOB'] = DOB
     dict_user['email'] = email
+    return dict_user
+
+def exit_connection():
+    dict_user={}
+    dict_user['action']="exit"
     return dict_user
 
 def print_sub_forums(dict):
@@ -219,7 +224,7 @@ def main():
         elif choice == '2':
             input = signup()
             client_json = JSON_Socket.json()
-            client.send(client_json.deserializer(input))
+            client.send(str(client_json.deserializer(input)))
             received = client.receive()
             print received
 
@@ -228,7 +233,11 @@ def main():
 
 
         elif choice == '4':
+            input = exit_connection()
+            client_json = JSON_Socket.json()
+            client.send(str(client_json.deserializer(input)))
             client.close()
+            break
 
         else:
             print "\nPlease Select a Valid Option"
