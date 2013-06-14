@@ -81,7 +81,7 @@ messages_metadata=[]
 def sign_up(user_obj):
         user_flag=1
         for i in  user_metadata:
-           if user_obj.username!=i.username:
+           if user_obj.name!=i.name:
                pass
            else:
                return False
@@ -95,7 +95,7 @@ def insert(user_obj):
 
 def sign_in(user_sign_in_obj):
     for  i in user_metadata:
-        if i.username==user_sign_in_obj.username and i.password==user_sign_in_obj.password:
+        if i.name==user_sign_in_obj.username and i.password==user_sign_in_obj.password:
             return True #print 'authorized user'
     return False # print 'invalid user'
 
@@ -109,7 +109,6 @@ def display_main_forums():
     print "\t6. HEALTH"
     print "\t7. MISCELLANEOUS"
     print "\n"
-
 
 def create_sub_forum(i,sub_forum_obj):
     #temp_list=[sub_forum_obj.sub_forum_name,sub_forum_obj.forum_name,sub_forum_obj.createdby,sub_forum_obj.number_of_views,sub_forum_obj.no_of_questions,sub_forum_obj.pointer_to_next_sub_forum,sub_forum_obj.pointer_to_prev_sub_forum,sub_forum_obj.pointer_to_first_msg,sub_forum_obj.last_modified_time,sub_forum_obj.date_of_creation,sub_forum_obj.time_of_creation,sub_forum_obj.last_accessed_time,sub_forum_obj.last_back_up_time]
@@ -163,8 +162,8 @@ def post_question_in_sub_forum(forum_name,sub_forum_name,created_by,msg):
 
 
 
-#if __name__=="__main__":
+if __name__=="__main__":
 #      return sign_up(sign_up_object)
 #      return log_in(login_object)
-
+       display_main_forums()
 

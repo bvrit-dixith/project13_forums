@@ -1,25 +1,15 @@
 __author__ = 'Chaitanya'
 
-__author__ = 'Chaitanya'
-
 #import inspect
 #import os
 #from memory import *
 
 import struct
+import cachefile
 from io.projectutils import *
 
-
-class user_metadata_class:
-    def __init__(self):
-        self.username=None
-        self.password=None
-        self.email=None
-        self.DOB=None
-        self.join_date=None
-        pass
-
 user_metadata=[]
+global forum_metadata
 
 
 def load_user_metadata():
@@ -40,6 +30,8 @@ def load_user_metadata():
         user_metadata.append(obj)
         c+=1
     fp.close()
+    print user_metadata
+    #print user_metadata[3].username
 
 
 
@@ -84,22 +76,24 @@ def load_user_metadata():
     print user_metadata[3].username'''
 
 def load_forum_metadata():
+    global forum_metadata
     fp=open('C:\Users\Chaitanya\PycharmProjects\project13_branch\project13_forums\io\data.bin','rb')
     fp.seek(1026)
     forum_count=struct.unpack('I',fp.read(4))[0]
     forum_metadata=[]
     c=1
     while c<=forum_count:
-        obj=Forum()
+        obj=Forum(0,'',None,None,None)
         obj.id=struct.unpack('I',fp.read(4))[0]
         obj.name=fp.read(30).strip('\x00')
         obj.nextForum=struct.unpack('I',fp.read(4))[0]
         obj.prevForum=struct.unpack('I',fp.read(4))[0]
         obj.firstsubForum=struct.unpack('I',fp.read(4))[0]
-        fp.read(70-42)
+        fp.read(70-46)
         forum_metadata.append(obj)
         c+=1
     fp.close()
+
 
 
 def load_sub_forum_metadata():
@@ -128,4 +122,11 @@ def load_sub_forum_metadata():
 
 
 if __name__=="__main__":
-    load_user_metadata()
+    global forum_metadata
+    load_forum_metadata()
+    for i in range(len(forum_metadata)):
+        print forum_metadata[i].id
+        print forum_metadata[i].name
+        print forum_metadata[i].nextForum
+        print forum_metadata[i].prevForum
+        print forum_metadata[i].firstsubForum
