@@ -1,7 +1,7 @@
 __author__ = 'Dixith Kurra'
 
 
-class user_metadata:
+'''class user_metadata:
     def __init__(self):
         self.username=''
         self.password=''
@@ -54,10 +54,10 @@ class message_metadata:
         self.no_of_spams=''
         self.size=''
         pass
+'''
 
 
-
-import api.server
+import io.projectutils
 
 list1=[]  #category1
 list2=[]  #2
@@ -91,6 +91,7 @@ def insert(user_obj):
 
 
 def sign_in(user_sign_in_obj):
+    print user_metadata
     for  i in user_metadata:
         if i.username==user_sign_in_obj.username and i.password==user_sign_in_obj.password:
             return True #print 'authorized user'
@@ -104,7 +105,23 @@ def create_sub_forum(i,sub_forum_obj):
     pass
 
 
-def view_forum(i):
+def view_forum_in_memory(forum_obj):
+    forum_name=forum_obj.forum_name
+    if forum_name == "Education":
+        i=1
+    elif forum_name == "Health":
+        i=2
+    elif forum_name == "Entertainment":
+        i=3
+    elif forum_name == "Technology":
+        i=4
+    elif forum_name == "News":
+        i=5
+    elif forum_name == "Health":
+        i=6
+    elif forum_name == "Miscellaneous":
+        i=7
+
     '''view_sub_forum_list=[]
     for i in sub_forum_metadata:
         if i.forum_name==forum_name:
@@ -112,7 +129,10 @@ def view_forum(i):
     return view_sub_forum_list '''
     view_sub_forum_list=[]
     for k in sub_forum_metadata[i]:
-        view_sub_forum_list.append(k.forum_name)
+        temp=[]
+        temp.append(k.forumname)
+        temp.append(k.createdby)
+        view_sub_forum_list.append(temp)
     return view_sub_forum_list
 
 def delete_sub_forum(i,sub_forum_name):
