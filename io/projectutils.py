@@ -22,7 +22,7 @@ class SubForum(object):
         self.num_of_questions=0
 
 class Message(object):
-    def __init__(self,forumname,subForumname,postedby,length):
+    def __init__(self,forumname,subForumname,postedby,length,msg):
         self.forumName=forumname
         self.subForumname=subForumname
         self.postedby=postedby
@@ -32,9 +32,11 @@ class Message(object):
         self.prevQuestion=-1
         self.firstReply=-1
         self.messagedata=-1
+        self.num_of_replies=0
+        self.msg=msg
 
 class Reply(object):
-    def __init__(self,forumname,subForumname,message_id,postedby):
+    def __init__(self,forumname,subForumname,message_id,postedby,msgLength,msg):
         self.id=-1
         self.q_id=message_id
         self.forumname=forumname
@@ -43,6 +45,8 @@ class Reply(object):
         self.nextReply=-1
         self.prevReply=-1
         self.replydata=-1
+        self.length=msgLength
+        self.msg=msg
 
 class User(object):
     def __init__(self,name,password,mail_id,birthdate,joiningdate):
@@ -52,3 +56,4 @@ class User(object):
         self.mail=mail_id
         self.birth_date=birthdate
         self.join_date=joiningdate
+        self.num_of_posted_messages=0
