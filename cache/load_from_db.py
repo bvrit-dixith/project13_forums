@@ -6,7 +6,7 @@ __author__ = 'Chaitanya'
 
 import struct
 import cachefile
-from io.projectutils import *
+from backend.projectutils import *
 
 user_metadata=[]
 global forum_metadata

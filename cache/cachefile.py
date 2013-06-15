@@ -2,7 +2,8 @@ __author__ = 'Dixith Kurra'
 
 
 
-import io.projectutils
+import backend.projectutils
+from backend.store import *
 
 list1=[]  #category1
 list2=[]  #2
@@ -23,7 +24,7 @@ messages_metadata=[]
 def sign_up(user_obj):
         user_flag=1
         for i in  user_metadata:
-           if user_obj.username!=i.username:
+           if user_obj.name!=i.name:
                pass
            else:
                return False
@@ -31,6 +32,7 @@ def sign_up(user_obj):
             return insert(user_obj)
 
 def insert(user_obj):
+    addUserMetadata(user_obj)
     user_metadata.append(user_obj)
     return True
 
@@ -38,7 +40,7 @@ def insert(user_obj):
 def sign_in(user_sign_in_obj):
     print user_metadata
     for  i in user_metadata:
-        if i.username==user_sign_in_obj.username and i.password==user_sign_in_obj.password:
+        if i.name==user_sign_in_obj.name and i.password==user_sign_in_obj.password:
             return True #print 'authorized user'
     return False # print 'invalid user'
 
@@ -77,11 +79,6 @@ def get_number(forum_name):
 def view_forum_in_memory(forum_obj):
     forum_name=forum_obj.forum_name
     i=get_number(forum_name)
-    '''view_sub_forum_list=[]
-    for i in sub_forum_metadata:
-        if i.forum_name==forum_name:
-           view_sub_forum_list.append(i.sub_forum_name)
-    return view_sub_forum_list '''
     view_sub_forum_list=[["cse","chaitanya"]]
     for k in sub_forum_metadata[i]:
         temp=[]
@@ -109,11 +106,11 @@ def delete_sub_forum(i,sub_forum_name):
 
 
 def view_sub_forum():
-    #call io(obj)
+    #call backend(obj)
     pass
 
 def view_ques_in_sub_forum(forum_name,sub_forum_name):
-    #call io(obj)
+    #call backend(obj)
 
     pass
 

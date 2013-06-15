@@ -114,6 +114,10 @@ def writeSubforumdata(filename,subforumData):
         f.write(struct.pack('i',subforumData.prevSubForum))
         f.write(struct.pack('i',subforumData.firstQuestion))
         f.write(struct.pack('i',subforumData.num_of_questions))
+        f.write(struct.pack('i',subforumData.num_of_views))
+
+        f.write(struct.pack('i',subforumData.date_of_creation))
+        f.write(struct.pack('i',subforumData.last_accessed_time))
         subforum_count+=1
         f.seek(43526)
         f.write(struct.pack('I',subforum_count))

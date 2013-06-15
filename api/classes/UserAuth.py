@@ -7,11 +7,11 @@ import re
 
 class UserAuth(object):
     def __init__(self, username, password):
-        self.username = username
+        self.name = username
         self.password = password
 
     def validate(self):
-        if len(self.username) <= 20 and re.match("^[a-zA-Z]{1}[a-zA-Z0-9]*$", self.username):
+        if len(self.name) <= 20 and re.match("^[a-zA-Z]{1}[a-zA-Z0-9]*$", self.name):
             pass
         else:
             return "Invalid Username: username must consist atmost 20 alphanumerics"
@@ -25,6 +25,3 @@ class UserAuth(object):
         dict['message'] = input
         return str(dict)
         pass
-
-
-

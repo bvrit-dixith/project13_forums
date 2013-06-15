@@ -89,8 +89,3 @@ def convert_from_json_object(input):
             i += 1
     return json_dict
 
-
-
-if __name__=="__main__":
-    c=convert_from_json_object(input_set)
-    print c

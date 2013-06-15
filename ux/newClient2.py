@@ -3,7 +3,7 @@ __author__ = 'Sumzy'
 import JSON_Socket
 import socket
 from serialization import *
-
+from cache.cachefile import *
 import datetime
 import re
 
@@ -81,7 +81,7 @@ def serialize_date(input):
                 break
             date += input[i]
             continue
-    return [int(year), int(month), int(date)]
+    return int(year), int(month), int(date)
 
 
 def signup():
@@ -125,12 +125,12 @@ def signup():
 
 def exit_connection():
     dict_user={}
-    dict_user['action']="exit"
+    dict_user['action'] = "exit"
     return dict_user
 
 def print_sub_forums(dict):
     header = ("SubForums","Created By")
-    dict_list=dict.items()
+    dict_list=dict.values()
     dict_list.insert(0,header)
     col_width = max(len(word) for row in dict_list for word in row) + 2 # padding
     for row in dict_list:
@@ -177,7 +177,7 @@ def main():
             client.send(json_object)
             received = client.receive()
             serialized = serialize_auth(received)
-            if serialized == "True":
+            if serialized == "login successful":
                 print "Welcome, " + uname
                 while True:
                     forum_name,f_name = display_user(uname)
@@ -185,10 +185,12 @@ def main():
                     display_forums_from_server = client.receive()
                     subforums_Json = JSON_Socket.json()
                     output = subforums_Json.serializer(display_forums_from_server)
-                    output += output.split()
-                    data_send,sub_forum = display_user_selected_forum(f_name,output,uname)
-                    client.send(data_send)
+                    #output += output.split()
+                    data_send = display_user_selected_forum(f_name,output,uname)
+                    sub_forum=data_send["new_forum_name"]
+                    client.send(str(data_send))
                     questions = client.receive()
+                    print questions
                     cli_json=JSON_Socket.json()
                     questions= cli_json.serializer(questions)
                     questions,id_q = split_client(questions)
@@ -217,14 +219,14 @@ def main():
                             print_rep_info = serialize_auth(about_reply)
                             print_rep_info.split()
                             for i in print_rep_info:
-                                print i
+                             print i
             else:
                 print "Invalid Login Credentials. Please re-check them"
 
         elif choice == '2':
             input = signup()
             client_json = JSON_Socket.json()
-            client.send(str(client_json.deserializer(input)))
+            client.send(client_json.deserializer(input))
             received = client.receive()
             print received
 
@@ -233,9 +235,9 @@ def main():
 
 
         elif choice == '4':
-            input = exit_connection()
+            input=exit_connection()
             client_json = JSON_Socket.json()
-            client.send(str(client_json.deserializer(input)))
+            client.send(client_json.deserializer(input))
             client.close()
             break
 
@@ -245,7 +247,9 @@ def main():
     pass
 
 def serialize_auth(input):
-    return convert_from_json_object(input)
+    x= convert_from_json_object(input)
+    print x
+    return " ".join(x.values())
 
 def view_forum(forum_name):
     global forum_details
@@ -257,7 +261,6 @@ def view_forum(forum_name):
 
     return json_object,forum_name
 
-    pass
 
 
 
@@ -329,7 +332,7 @@ def display_user(user):
     while True:
         option = raw_input("Select the Forum you wish to View " + user + ":" )
         if option == '1':
-            return view_forum("Education")
+           return view_forum("Education")
         elif option == '2':
             return view_forum("Health")
         elif option == '3':
@@ -359,28 +362,27 @@ def display_user_selected_forum(forum_name,output,uname):
             while True:
                 for i in range(len(output)):
                     print str(i+1)
-                    output_dict=convert_from_json_object(output)
-                    print_sub_forums(output_dict)
+                    #output_dict=convert_from_json_object(output)
+                    print_sub_forums(output)
                 option = raw_input("Select a Sub-forum : ")
-                if option<len(output.split()) or option>len(output.split()):
+                if option<1 or option>i:
                     print "Enter a valid option"
                 else:
-                    output = output.split()
+                    #output = output.split()
                     d = {}
                     d['action'] = "open_sub_forum"
                     d['forum_name'] = forum_name
                     d['sub_forum']= output[option - 1]
-                    return str(d),output[option - 1]
+                    return d
             return
         elif option == "2":
             new_sub_forum = raw_input("Enter the name of the Sub-forum :")
             d = {}
             d['action'] = "new_sub_forum"
             d['forum_name'] = forum_name
-            d['new_sub_forum'] = new_sub_forum
+            d['new_forum_name'] = new_sub_forum
             d['created_by'] = uname
-            return str(d)
-            return
+            return d
         elif option == "3":
             return "break"
         elif option == "4":
@@ -393,5 +395,3 @@ def display_user_selected_forum(forum_name,output,uname):
 
 if __name__ == "__main__":
     main()
-
-
