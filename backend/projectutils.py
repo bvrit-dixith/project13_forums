@@ -8,6 +8,7 @@ class Forum(object):
         self.prevForum=-1
         self.firstsubForum=-1
         self.num_of_subforums=0
+        self.num_of_views=-1
 
 
 class SubForum(object):
@@ -20,6 +21,9 @@ class SubForum(object):
         self.prevSubForum=-1
         self.firstQuestion=-1
         self.num_of_questions=0
+        self.num_of_views=-1
+        self.date_of_creation=""
+        self.last_accessed_time=""
 
 class Message(object):
     def __init__(self,forumname,subForumname,postedby,length,msg):
@@ -34,6 +38,9 @@ class Message(object):
         self.messagedata=-1
         self.num_of_replies=0
         self.msg=msg
+        self.num_of_views=-1
+        self.num_of_likes=-1
+        self.isResolved=False
 
 class Reply(object):
     def __init__(self,forumname,subForumname,message_id,postedby,msgLength,msg):
@@ -47,6 +54,9 @@ class Reply(object):
         self.replydata=-1
         self.length=msgLength
         self.msg=msg
+        self.num_of_views=-1
+        self.num_of_likes=-1
+
 
 class User(object):
     def __init__(self,name,password,mail_id,birthdate,joiningdate):

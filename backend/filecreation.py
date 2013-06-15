@@ -68,6 +68,7 @@ def writeForumData(filename,forumdata):
         f.write(struct.pack('i',forumdata.prevForum))
         f.write(struct.pack('i',forumdata.firstsubForum))
         f.write(struct.pack('i',forumdata.num_of_subforums))
+        f.write(struct.pack('i',forumdata.num_of_views))
         forum_count+=1
         f.seek(1026)
         f.write(struct.pack('I',forum_count))
@@ -85,8 +86,11 @@ def writeUserData(filename,userdata):
         f.write(struct.pack('20s',userdata.name))
         f.write(struct.pack('10s',userdata.password))
         f.write(struct.pack('30s',userdata.mail))
-        f.write(struct.pack('10s',userdata.birth_date))
-        f.write(struct.pack('10s',userdata.join_date))
+        t=datetime.date(userdata.birth_date[0],userdata.birth_date[1],userdata.birth_date[2])
+        strTime=t.strftime('%y-%m-%d')
+        f.write(struct.pack('10s',strTime))
+        joinTime=userdata.join_date.strftime('%y-%m-%d')
+        f.write(struct.pack('10s',joinTime))
         f.write(struct.pack('i',userdata.num_of_posted_messages))
         user_count+=1
         f.seek(1526)
@@ -371,6 +375,7 @@ def actualReplyStore(replyObj):
     f.write(struct.pack('I',position))
     updateUserDetails(replyObj)
     return address
+
 
 
 if __name__=="__main__":
