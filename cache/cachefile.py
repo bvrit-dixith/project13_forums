@@ -1,131 +1,206 @@
 __author__ = 'Dixith Kurra'
 
 
-
-import backend.projectutils
+import struct
 from backend.store import *
+from backend.projectutils import *
 
-list1=[]  #category1
-list2=[]  #2
-list3=[]  #3
-list4=[]  #4
-list5=[]  #5
-list6=[]  #6
-list7=[]  #7
+list1 = []  #category1
+list2 = []  #2
+list3 = []  #3
+list4 = []  #4
+list5 = []  #5
+list6 = []  #6
+list7 = []  #7
 
-user_metadata=[]
+user_metadata = []
+forum_metadata = []
+sub_forum_metadata = [list1, list2, list3, list4, list5, list6, list7]
 
-forum_metadata=[]
-
-sub_forum_metadata=[list1,list2,list3,list4,list5,list6,list7]
-
-messages_metadata=[]
 
 def sign_up(user_obj):
-        user_flag=1
-        for i in  user_metadata:
-           if user_obj.name!=i.name:
-               pass
-           else:
-               return False
-        if user_flag==1:
-            return insert(user_obj)
+    for i in  user_metadata:
+        if user_obj.name!=i.name:
+            pass
+        else:
+            return False
+    return insert(user_obj)
 
 def insert(user_obj):
-    addUserMetadata(user_obj)
+    addUserMetadata(user_obj)  #call backend old
     user_metadata.append(user_obj)
     return True
 
 
 def sign_in(user_sign_in_obj):
-    print user_metadata
     for  i in user_metadata:
         if i.name==user_sign_in_obj.name and i.password==user_sign_in_obj.password:
             return True #print 'authorized user'
     return False # print 'invalid user'
 
 
-def create_sub_forum(sub_forum_obj):
-    forum_name=sub_forum_obj.forum_name
+def create_sub_forum(sub_forum_obj): #3 fileds in sub_form_obj
+    forum_name=sub_forum_obj.forumname
     i=get_number(forum_name)
-    sub_forum_name = sub_forum_obj.sub_forum_name
-    #temp_list=[sub_forum_obj.sub_forum_name,sub_forum_obj.forum_name,sub_forum_obj.createdby,sub_forum_obj.number_of_views,sub_forum_obj.no_of_questions,sub_forum_obj.pointer_to_next_sub_forum,sub_forum_obj.pointer_to_prev_sub_forum,sub_forum_obj.pointer_to_first_msg,sub_forum_obj.last_modified_time,sub_forum_obj.date_of_creation,sub_forum_obj.time_of_creation,sub_forum_obj.last_accessed_time,sub_forum_obj.last_back_up_time]
-
+    print i,"line 45"
+    print type(i),"Line 46"
+    sub_forum_name = sub_forum_obj.name
     for k in sub_forum_metadata[i]:
-        if k.sub_forum_name==sub_forum_name:
+        if k.name==sub_forum_name:
             return False
+    writesubForumData(sub_forum_obj) #call backend old
     sub_forum_metadata[i].append(sub_forum_obj)
     return True
-    #sub_forum_value_cache.append(list_obj)
     pass
 
 def get_number(forum_name):
     if forum_name == "Education":
-        return 1
-    elif forum_name == "Health":
-        return 2
+        return int(1)
+    elif forum_name == "Sports":
+        return int(2)
     elif forum_name == "Entertainment":
-        return 3
+        return int(3)
     elif forum_name == "Technology":
-        return 4
+        return int(4)
     elif forum_name == "News":
-        return 5
+        return int(5)
     elif forum_name == "Health":
-        return 6
+        return int(6)
     elif forum_name == "Miscellaneous":
-        return 7
+        return int(7)
 
 
 def view_forum_in_memory(forum_obj):
-    forum_name=forum_obj.forum_name
+    forum_name=forum_obj.forumname
     i=get_number(forum_name)
-    view_sub_forum_list=[["cse","chaitanya"]]
+    view_sub_forum_list=[]
     for k in sub_forum_metadata[i]:
         temp=[]
-        temp.append(k.forumname)
+        temp.append(k.id)
+        temp.append(k.name)
         temp.append(k.createdby)
         view_sub_forum_list.append(temp)
     return view_sub_forum_list
 
-def delete_sub_forum(i,sub_forum_name):
-    '''del_flag=0
-    for i in sub_forum_metadata:
-        if i.sub_forum_name==sub_forum_name:
-           del_flag=1
-           del i
-    if del_flag==0:
-        return False
-    return True
-    pass   '''
+'''def delete_sub_forum(i,sub_forum_name):
+    pass
     pass
     for k in sub_forum_metadata[i]:
         if k.forum_name==sub_forum_name:
             del k
             return True
     return False
+'''
 
+def view_que_in_subforum(sub_forum_obj):
+    msg_id_list=viewQuestions(sub_forum_obj)
+    fp=open('C:\project13_final\project13_forums\\backend old\data.bin','rb')
+    try:
+        msg_list=[]
+        i=0
+        while i+1<len(msg_id_list):
+             fp.seek(msg_id_list[i]+4)
+             msg=fp.read(msg_id_list[i+1]-msg_id_list[i]-4)
+             temp_list=[msg_id_list[i],msg]
+             msg_list.append(temp_list)
+             i+=1
+    except Exception:
+        pass
+    finally:
+        fp.close()
+    return msg_list
 
-def view_sub_forum():
-    #call backend(obj)
+def view_replies_for_que_in_sub_forum(que_obj):
+    rply_id_list= viewReplies(que_obj)
+    fp=open('C:\project13_final\project13_forums\\backend old\data.bin','rb')
+    try:
+
+       rply_list=[]
+       i=0
+       while i+1<len(rply_id_list):
+          fp.seek(rply_id_list[i]+4)
+          que=fp.read(rply_id_list[i+1]-rply_id_list[i]-4)
+          temp_list=[rply_id_list[i],que]
+          rply_list.append(temp_list)
+          i+=1
+    except Exception:
+        pass
+    finally:
+        fp.close()
+    return rply_list
+
     pass
 
-def view_ques_in_sub_forum(forum_name,sub_forum_name):
-    #call backend(obj)
 
-    pass
-
-
-
-def post_question_in_sub_forum(forum_name,sub_forum_name,created_by,msg):
+def post_msg_in_sub_forum(msg_obj):
+    writeMessageData(msg_obj)  #call backend old
     pass
 
 
 
 
+def post_rply_in_sub_forum(rply_obj):
+    writereplyData(rply_obj)   #call backend old
+    pass
 
 
-#if __name__=="__main__":
-#      return sign_up(sign_up_object)
-#      return log_in(login_object)
 
+def load_database():
+    #def load_user_metadata():
+    fp = open('C:\project13_final\project13_forums\\backend old\data.bin','rb')
+    try:
+
+        fp.seek(1526)
+        user_count = struct.unpack('I', fp.read(4))[0]
+        c = 1
+        while c <= user_count:
+            obj = User(None, None, None, None, None)
+            obj.id = struct.unpack('I', fp.read(4))[0]
+            obj.name = fp.read(20).strip('\x00')
+            obj.password = fp.read(10).strip('\x00')
+            obj.mail = fp.read(30).strip('\x00')
+            obj.birth_date = fp.read(10).strip('\x00')
+            obj.join_date = fp.read(10).strip('\x00')
+            fp.read(122 - 84)
+            user_metadata.append(obj)
+            c += 1
+        print user_metadata
+
+        #def load_forum_metadata():
+        fp.seek(1026)
+        forum_count = struct.unpack('I', fp.read(4))[0]
+        c = 1
+        while c <= forum_count:
+            obj = Forum(0, '')
+            obj.id = struct.unpack('I', fp.read(4))[0]
+            obj.name = fp.read(30).strip('\x00')
+            obj.nextForum = struct.unpack('I', fp.read(4))[0]
+            obj.prevForum = struct.unpack('I', fp.read(4))[0]
+            obj.firstsubForum = struct.unpack('I', fp.read(4))[0]
+            fp.read(70 - 46)
+            forum_metadata.append(obj)
+            c += 1
+
+
+        #def load_sub_forum_metadata():
+        fp.seek(43526)
+        sub_forum_count = struct.unpack('I', fp.read(4))[0]
+        c = 1
+        while c <= sub_forum_count:
+            obj = SubForum(None, None, None)
+            obj.id = struct.unpack('I', fp.read(4))[0]
+            obj.name = fp.read(30).strip('\x00')
+            obj.forumname = fp.read(30).strip('\x00')
+            obj.createdby = fp.read(20).strip('\x00')
+            obj.nextSubForum = struct.unpack('I', fp.read(4))[0]
+            obj.prevSubForum = struct.unpack('I', fp.read(4))[0]
+            obj.firstQuestion = struct.unpack('I', fp.read(4))[0]
+            obj.num_of_questions = struct.unpack('I', fp.read(4))[0]
+            fp.read(122 - 100)
+            sub_forum_metadata.append(obj)
+            c += 1
+    except Exception:
+        pass
+    finally:
+        fp.close()
 
