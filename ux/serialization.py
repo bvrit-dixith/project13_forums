@@ -1,6 +1,6 @@
 __author__ = 'pranee'
 import string
-input_set ="{'message':'hu','forum_name':'hry','action':'create'}"
+
 
 def string(input, index):
     string = ''
@@ -20,7 +20,7 @@ def number(input, index):
 def dict(input, index):
     dict_gen = {}
     key, value, quote_hit, val = None, None, False, None
-    while input[index] != '}':
+    while input[index] != '}' and input[index] != ']':
         if input[index] == '"' or input[index] == "'":
             val, index = string(input, index+1)
             if quote_hit:
@@ -83,9 +83,15 @@ def convert_from_json_object(input):
     i, length = 0, len(input)
     json_dict = None
     while i < length:
-        if input[i] == '{':
+        if input[i] == '{' or input[i] == '[':
             json_dict, i = dict(input, i + 1)
         else:
             i += 1
     return json_dict
 
+def convert_string_list_to_list(l):
+    l=l.strip('[]')
+    if l is '':
+        return None
+    l=map(int, l.split(","))
+    return l

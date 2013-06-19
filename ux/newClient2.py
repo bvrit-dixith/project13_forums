@@ -1,5 +1,3 @@
-__author__ = 'Sumzy'
-
 import JSON_Socket
 import socket
 from serialization import *
@@ -19,7 +17,7 @@ class mySocket:
         self.sock.connect((host, port))
 
     def send(self, msg):
-        sent = self.sock.send(msg)
+        sent = self.sock.send(str(msg))
         if sent == 0:
             print "Runtime error"
 
@@ -50,7 +48,7 @@ def signin():
         else:
             print "Invalid password: Password should be of 6-10 characters and alphanumeric"
     authen_dict['action'] = "login"
-    authen_dict['username'] = username
+    authen_dict['name'] = username
     authen_dict['password'] = password
     return authen_dict
     pass
@@ -81,7 +79,7 @@ def serialize_date(input):
                 break
             date += input[i]
             continue
-    return int(year), int(month), int(date)
+    return [int(year), int(month), int(date)]
 
 
 def signup():
@@ -111,13 +109,12 @@ def signup():
             print "Invalid Date. Please Enter a Valid Date."
     while True:
         email = raw_input("Your current Email Address : ")
-        if len(email) <= 30 and re.match("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$",
-                                         email):
+        if len(email) <= 30 and re.match("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$",email):
             break
         else:
             print "Invalid Email. Please Enter a Valid Email Address"
     dict_user['action'] = "signup"
-    dict_user['username'] = username
+    dict_user['name'] = username
     dict_user['password'] = password
     dict_user['DOB'] = DOB
     dict_user['email'] = email
@@ -128,13 +125,14 @@ def exit_connection():
     dict_user['action'] = "exit"
     return dict_user
 
-def print_sub_forums(dict):
-    header = ("SubForums","Created By")
-    dict_list=dict.values()
-    dict_list.insert(0,header)
+def print_sub_forums(d):
+    dict_list = [('Subforums', 'Created by')]
+    for i, (k, v) in enumerate(d.items(), 1):
+        k = '{0}. {1}'.format(i, k)
+        dict_list.append((k, v))
     col_width = max(len(word) for row in dict_list for word in row) + 2 # padding
     for row in dict_list:
-        print "".join(word.ljust(col_width) for word in row)
+        print ''.join(word.ljust(col_width) for word in row)
 
 def display():
     print "The forums listed are :"
@@ -145,9 +143,11 @@ def display():
     print "\t5. NEWS"
     print "\t6. HEALTH"
     print "\t7. MISCELLANEOUS"
-    print "\n"
 
 def split_client(dict):
+    print dict,"line148 Client"
+    if len(dict)==0:
+        return None,None
     dict="#".join(dict.values())
     dict_keys=dict.keys()
     return dict.split('#'),dict_keys
@@ -171,7 +171,7 @@ def main():
 
         if choice == '1':
             input = signin()
-            uname = input['username']
+            uname = input['name']
             client_json = JSON_Socket.json()
             json_object = client_json.deserializer(input)
             client.send(json_object)
@@ -180,73 +180,87 @@ def main():
             if serialized == "login successful":
                 print "Welcome, " + uname
                 while True:
-                    forum_name,f_name = display_user(uname)
-                    client.send(forum_name)
-                    display_forums_from_server = client.receive()
+                    data_forum,f_name = display_user(uname)
+                    if data_forum['action'] == "break":
+                        break
+                    client.send(data_forum)
+                    a=  client.receive()
+                    a=a.split(";")
+                    print a, "Line 189"
+                    display_forums_from_server=a[0]
+                    list_ids=a[1]
                     subforums_Json = JSON_Socket.json()
                     output = subforums_Json.serializer(display_forums_from_server)
-                    #output += output.split()
-                    data_send = display_user_selected_forum(f_name,output,uname)
-                    sub_forum=data_send["new_forum_name"]
-                    client.send(str(data_send))
-                    questions = client.receive()
-                    print questions
-                    cli_json=JSON_Socket.json()
-                    questions= cli_json.serializer(questions)
-                    questions,id_q = split_client(questions)
-                    while True:
-                        result = display_questions(questions,uname,f_name,sub_forum,id_q)
-                        if result == "break":
-                            break
-                        elif result == "exit":
-                            exit(0)
-                        client.send(result)
-                        about_question = client.receive()
-                        print_info = serialize_auth(about_question)
-                        print_info.split()
+                    print list_ids, "Line 194"
+                    print type(list_ids)
+                    list_output=convert_string_list_to_list(list_ids)
+                    data_send = display_user_selected_forum(f_name,output,uname,list_output)
+                    print data_send,"Line 190"
+                    if data_send['action'] == "break":
+                        continue
+                    elif data_send['action'] == "LogOut":
+                        exit(0)
+                    elif data_send['action'] == "open_sub_forum":
+                        sub_forum = data_send['name']
+                        print data_send, "Line 202"
+                        client.send(str(data_send))
+                        questions = client.receive()
+                        print questions, "Line 204"
                         while True:
-                            for i in print_info:
-                                print i
-                            #replies_Json = JSON_Socket.json()
-                            #replies = replies_Json.serializer(about_question)
-                            result = display_replies(uname,f_name,sub_forum)
-                            if result == "break":
-                                break
-                            elif result =="exit":
-                                exit(0)
-                            client.send(result)
-                            about_reply = client.receive()
-                            print_rep_info = serialize_auth(about_reply)
-                            print_rep_info.split()
-                            for i in print_rep_info:
-                             print i
+                            cli_json=JSON_Socket.json()
+                            print questions, "line 211"
+                            questions= cli_json.serializer(questions)
+
+                            questions,id_q = split_client(questions)
+                            operation = display_questions(questions,uname,f_name,sub_forum,id_q)
+                            if operation['action'] == "continue":
+                                continue
+                            client.send(str(operation))
+                            received = client.receive()
+                            questions = client_json.serializer(received)
+                            while True:
+                                if questions['message']:
+                                    print questions['message']
+                                #replies_Json = JSON_Socket.json()
+                                #replies = replies_Json.serializer(about_question)
+                                result = display_replies(uname,f_name,sub_forum)
+                                if result['action'] == "break":
+                                    break
+                                client.send(result)
+                                about_reply = client.receive()
+                                print_rep_info = serialize_auth(about_reply)
+                                print_rep_info.split()
+                                for i in print_rep_info:
+                                    print i
+                    elif data_send['action'] == "new_sub_forum":
+                        sub_forum=data_send["name"]
+                        client.send(str(data_send))
+                        success = client.receive()
+                        success = client_json.serializer(success)
+                        print success
             else:
                 print "Invalid Login Credentials. Please re-check them"
-
         elif choice == '2':
             input = signup()
             client_json = JSON_Socket.json()
             client.send(client_json.deserializer(input))
             received = client.receive()
             print received
-
         elif choice == '3':
             display()
-
-
         elif choice == '4':
             input=exit_connection()
             client_json = JSON_Socket.json()
             client.send(client_json.deserializer(input))
             client.close()
             break
-
         else:
             print "\nPlease Select a Valid Option"
 
     pass
 
 def serialize_auth(input):
+    print input,"Line261"
     x= convert_from_json_object(input)
     print x
     return " ".join(x.values())
@@ -254,14 +268,12 @@ def serialize_auth(input):
 def view_forum(forum_name):
     global forum_details
     forum_details['action'] = "view_forum"
-    forum_details['forum_name'] = forum_name
+    forum_details['forumname'] = forum_name
 
-    forum_json = JSON_Socket.json()
-    json_object = forum_json.deserializer(forum_details)
+    # forum_json = JSON_Socket.json()
+    # json_object = forum_json.deserializer(forum_details)
 
-    return json_object,forum_name
-
-
+    return forum_details,forum_name
 
 
 def display_questions(questions,uname,forum_name,sub_forum,id_q):
@@ -280,7 +292,7 @@ def display_questions(questions,uname,forum_name,sub_forum,id_q):
             else:
                 d = {}
                 d['action'] = "select_question"
-                d['forum_name'] = forum_name
+                d['forumname'] = forum_name
                 d['sub_forum'] = sub_forum
                 d['question'] = id_q[option - 1]
                 return str(d)
@@ -288,15 +300,14 @@ def display_questions(questions,uname,forum_name,sub_forum,id_q):
             question_new = raw_input("Enter your Question : ")
             d = {}
             d['action'] = "post_question"
-            d['forum_name'] = forum_name
+            d['forumname'] = forum_name
             d['sub_forum'] = sub_forum
-            d['created_by'] = uname
+            d['createdby'] = uname
             d['new_question'] = question_new
             return str(d)
             pass
         elif option == "3":
-            return "break"
-            pass
+            display()
         elif option == "4":
             return "exit"
             pass
@@ -313,10 +324,10 @@ def display_replies(uname,forum_name,sub_forum):
             reply_new = raw_input("Post your Reply here : ")
             d = {}
             d['action'] = "post_answer"
-            d['forum_name'] = forum_name
+            d['forumname'] = forum_name
             d['sub_forum'] = sub_forum
             d['new_reply'] = reply_new
-            d['created_by'] = uname
+            d['createdby'] = uname
             return str(d)
             pass
         elif option == "2":
@@ -328,68 +339,104 @@ def display_replies(uname,forum_name,sub_forum):
             print "Please Select a Valid Option"
 
 def display_user(user):
-    display()
     while True:
-        option = raw_input("Select the Forum you wish to View " + user + ":" )
-        if option == '1':
-           return view_forum("Education")
-        elif option == '2':
-            return view_forum("Health")
-        elif option == '3':
-            return view_forum("Entertainment")
-        elif option == '4':
-            return view_forum("Technology")
-        elif option == '5':
-            return view_forum("News")
-        elif option == '6':
-            return view_forum("Health")
-        elif option == '7':
-            return view_forum("Miscellaneous")
+        print "1.View Forums"
+        print "2.LogOut"
+        choice = raw_input("enter 1 or 2: ")
+        if choice == "1":
+            display()
+            print "\t8. Back"
+            while True:
+                option = raw_input("Select the Forum you wish to View " + user + ":" )
+                if option == '1':
+                   return view_forum("Education")
+                elif option == '2':
+                    return view_forum("Health")
+                elif option == '3':
+                    return view_forum("Entertainment")
+                elif option == '4':
+                    return view_forum("Technology")
+                elif option == '5':
+                    return view_forum("News")
+                elif option == '6':
+                    return view_forum("Health")
+                elif option == '7':
+                    return view_forum("Miscellaneous")
+                elif option == "8":
+                    break
+                else:
+                    print "\nPlease select a Valid option"
+        elif choice == "2":
+            d = {}
+            d['action'] = "break"
+            return d,user
         else:
-            print "\nPlease select a Valid option"
+            print "enter either 1 or 2 only"
 
     pass
 
 
-def display_user_selected_forum(forum_name,output,uname):
+def display_user_selected_forum(forum_name,output,uname,list_output):
     while True:
-        print "\t1. Select a Sub-forums"
+        print "\t1. View Sub-forums"
         print "\t2. Create a Sub-forum"
         print "\t3. Back"
         print "\t4. LogOut"
         option = raw_input("Select your option " + uname + ":" )
+        j=len(output.keys())
         if option == "1":
             while True:
-                for i in range(len(output)):
-                    print str(i+1)
-                    #output_dict=convert_from_json_object(output)
-                    print_sub_forums(output)
-                option = raw_input("Select a Sub-forum : ")
-                if option<1 or option>i:
+                output_dict=convert_from_json_object(str(output))
+                # print output_dict,len(output_dict),"Line 401"
+                if len(output_dict) == 0:
+                    print "No Threads in selected Forum"
+                    d={}
+                    d['action']="continue"
+                    return d
+                    # option=raw_input("Enter 8 to go back else go die: ")
+                    # if option == '8':
+                    #      break
+
+                print_sub_forums(output_dict)
+                option = raw_input("Select a sub-forum: ")
+                opt=int(option)-1
+                sub_id=list_output[opt]
+                out=[]
+                out=output_dict.keys()
+                try:
+                    index = out.index(option)
+                except Exception as e:
+                    print
+                if int(option)<1 or int(option)>len(out):
                     print "Enter a valid option"
                 else:
                     #output = output.split()
                     d = {}
                     d['action'] = "open_sub_forum"
-                    d['forum_name'] = forum_name
-                    d['sub_forum']= output[option - 1]
+                    d['forumname'] = forum_name
+                    d['id'] = sub_id
+                    d['name']= out[int(option) - 1]
                     return d
+
             return
         elif option == "2":
             new_sub_forum = raw_input("Enter the name of the Sub-forum :")
             d = {}
             d['action'] = "new_sub_forum"
-            d['forum_name'] = forum_name
-            d['new_forum_name'] = new_sub_forum
-            d['created_by'] = uname
+            d['forumname'] = forum_name
+            d['name'] = new_sub_forum
+            d['createdby'] = uname
             return d
         elif option == "3":
-            return "break"
+            d = {}
+            d['action'] = "break"
+            return d
         elif option == "4":
-            return "exit"
+            d = {}
+            d['action'] = "exit"
+            return d
         else:
             print "Enter a Valid Option"
-        pass
 
 
 

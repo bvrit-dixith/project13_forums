@@ -25,7 +25,8 @@ class json(object):
         return str(input)
 
     def serializer(self,msg):
-        return convert_from_json_object(msg)
+        print msg,"Line 28 Socket!"
+        return convert_from_json_object(str(msg))
 
 
 
