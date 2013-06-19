@@ -52,7 +52,6 @@ def createfile(filename):
     f.seek(104857620)
     f.write(struct.pack('I',104857630))     #address of free reply unit
     forumcreation()
-    print "forum closed"
     f.close()
 
 #writes forum metadata into a file
@@ -110,18 +109,23 @@ def writeSubforumdata(filename,subforumData):
         f.write(struct.pack('30s',subforumData.name))
         f.write(struct.pack('30s',subforumData.forumname))
         f.write(struct.pack('20s',subforumData.createdby))
-        f.write(struct.pack('i',subforumData.nextSubForum))
+        pos=f.tell()
+        if not subforum_count==0:
+            f.seek(43530+122*(subforum_count-1))
+            subforumData.prevSubForum=struct.unpack('i',f.read(4))[0]
+        subforumData.nextSubForum=43530+122*(subforum_count+1)
+        f.seek(pos)
         f.write(struct.pack('i',subforumData.prevSubForum))
+        f.write(struct.pack('i',subforumData.nextSubForum))
         f.write(struct.pack('i',subforumData.firstQuestion))
         f.write(struct.pack('i',subforumData.num_of_questions))
         f.write(struct.pack('i',subforumData.num_of_views))
-
-        f.write(struct.pack('i',subforumData.date_of_creation))
-        f.write(struct.pack('i',subforumData.last_accessed_time))
+        #f.write(struct.pack('10s',subforumData.date_of_creation))
+        f.write(struct.pack('10s',subforumData.last_accessed_time))
         subforum_count+=1
         f.seek(43526)
         f.write(struct.pack('I',subforum_count))
-    #f.close()
+    f.close()
 
 #writes message metadata into a file
 def writeMessagedata(filename,msgdata):
@@ -143,6 +147,9 @@ def writeMessagedata(filename,msgdata):
         msg_id=actualMsgStore(msgdata)                      #store actual message
         f.write(struct.pack('i',msg_id))                    #stores location of the message
         f.write(struct.pack('i',msgdata.num_of_replies))
+        f.write(struct.pack('i',msgdata.num_of_views))
+        f.write(struct.pack('i',msgdata.num_of_likes))
+        f.write(struct.pack('?',msgdata.isResolved))
         message_count+=1
         f.seek(86226)
         f.write(struct.pack('I',message_count))
@@ -164,6 +171,8 @@ def writeReplyData(filename,replydata):
         f.write(struct.pack('i',replydata.prevReply))
         replydata_id=actualReplyStore(replydata)
         f.write(struct.pack('i',replydata_id))
+        f.write(struct.pack('i',replydata.num_of_views))
+        f.write(struct.pack('i',replydata.num_of_likes))
         reply_count+=1
         f.seek(2500000)
         f.write(struct.pack('I',reply_count))
@@ -176,13 +185,13 @@ def getFilePath(filename):
     file=os.path.join(mod_dir,filename)
     return file
 
-
+'''
 def retrieve(filename):
     file=getFilePath(filename)
     f=open(file,"rb")
     f.seek(1530)
     data=f.read(20)
-    print data
+    print data'''
 
 def checkUsername(username):
     file=getFilePath("data.bin")
@@ -229,7 +238,7 @@ def getForumUpdated(present_forum_name,present_subforum_id):
     f.close()
 
 
-def getSubForumUpdated(present_forumname,present_subforum_name,present_message_id):
+def getSubForumUpdated(present_forumname,present_subforum_name,present_message_id,msgData):
     file=getFilePath("data.bin")
     f=open(file,"rb+")
     i=0
@@ -261,11 +270,19 @@ def getSubForumUpdated(present_forumname,present_subforum_name,present_message_i
     if struct.unpack('i',f.read(4))[0]==-1:
         f.seek(pos+58)
         f.write(struct.pack('I',present_message_id))
+        msgData.prevQuestion=first_subForum_id+122*i
+    else:
+        msgData.prevQuestion=present_message_id-120   #links to previous message in the same subforum
+    msgData.nextQuestion=present_message_id+120         #links to next message in the same subforum
+    msgid=msgData.id
+    f.seek(msgid+88)
+    f.write(struct.pack('I',msgData.nextQuestion))
+    f.write(struct.pack('I',msgData.prevQuestion))
     f.seek(43626+122*i)
     count1=struct.unpack('I',f.read(4))[0]
     count1+=1
     f.seek(43626+122*i)
-    f.write(struct.pack('I',count1))                  #writes message count in the subforum
+    f.write(struct.pack('i',count1))                  #writes message count in the subforum
 
 
 def getFirstSubforumId(forumname):
@@ -296,19 +313,19 @@ def getFirstMessageId(link1,count,subForumname):
     while i<count:
         f.seek(link1+122*i+4)
         temp=f.read(30).strip('\x00')
-        pos=f.tell()
         if temp==subForumname:
+            print "found"
             break
         i+=1
     else:
         print "no such subforum"
-    f.seek(pos+58)  #seeks to the place where first message id is stored
+    f.seek(58,1)  #seeks to the place where first message id is stored
     id=struct.unpack('I',f.read(4))[0]
     count=struct.unpack('I',f.read(4))[0]
     return id,count
 
 
-def getRequiredMessageId(link2,count1,question_id,id):
+def getRequiredMessageId(link2,count1,question_id,id,replydata):
     file=getFilePath("data.bin")
     f=open(file,"rb+")
     i=0
@@ -321,14 +338,21 @@ def getRequiredMessageId(link2,count1,question_id,id):
         print "no question with given id"
     pos=f.tell()
     f.seek(pos+92)
-    if struct.unpack('I',f.read(4))==-1:    #update first reply
-        f.seek(-4,1)
+    if struct.unpack('i',f.read(4))[0]==-1:    #update first reply
+        f.seek(pos+92)
         f.write(struct.pack('I',id))
+        replydata.prevReply=replydata.q_id
+    else:
+        replydata.prevReply=id-120
     f.seek(pos+100)
     count=struct.unpack('I',f.read(4))[0]
     count+=1                                #update num of replies
     f.seek(pos+100)
     f.write(struct.pack('I',count))
+    replydata.nextReply=id+120
+    f.seek(id+84)
+    f.write(struct.pack('I',replydata.nextReply))   #update previous and next replies
+    f.write(struct.pack('I',replydata.prevReply))
     f.close()
 
 def actualMsgStore(messageObj):
@@ -379,6 +403,56 @@ def actualReplyStore(replyObj):
     f.write(struct.pack('I',position))
     updateUserDetails(replyObj)
     return address
+
+def getQuestionIds(link2,num_of_msgs):
+    file=getFilePath("data.bin")
+    f=open(file,"rb+")
+    idList=[]
+    i=0
+    while i<num_of_msgs:
+        link=link2+88
+        f.seek(link+12)
+        idList.append(struct.unpack('I',f.read(4))[0])
+        f.seek(link)
+        link2=struct.unpack('I',f.read(4))[0]
+        i+=1
+    return idList
+
+def getFirstReplyId(link2,count1,id):
+    file=getFilePath("data.bin")
+    f=open(file,"rb+")
+    i=0
+    while i<count1:
+        f.seek(link2+120*i)
+        if id==struct.unpack('I',f.read(4))[0]:
+            break
+        i+=1
+    else:
+        print "no question with given id"
+    pos=f.tell()
+    f.seek(pos+92)
+    id= struct.unpack('i',f.read(4))[0]
+    f.seek(pos+100)
+    num_of_replies=struct.unpack('i',f.read(4))[0]
+    return id,num_of_replies
+
+def getReplies(link3,count):
+    replyList=[]
+    i=0
+    if link3==-1 or count==0:
+        print "question has no replies posted"
+
+    else:
+        file=getFilePath("data.bin")
+        f=open(file,"rb+")
+        while i<count:
+            link=link3+92
+            f.seek(link)
+            replyList.append(struct.unpack('I',f.read(4))[0])
+            f.seek(link3+84)
+            link3=struct.unpack('I',f.read(4))[0]
+            i+=1
+    return replyList
 
 
 
